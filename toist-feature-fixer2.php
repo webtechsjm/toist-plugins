@@ -26,7 +26,7 @@ add_action('admin_menu',function(){
 function feature_fix_page(){
 
 	$posts = new WP_Query(array(
-		"post_type"					=> array('event','post','page'),
+		"post_type"					=> 'any',
 		"post_status"				=>	'any',
 		"posts_per_page"		=>	100,
 		"meta_query"	=>	array(
