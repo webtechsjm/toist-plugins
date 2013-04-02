@@ -27,7 +27,7 @@ function feature_fix_page(){
 
 	$posts = new WP_Query(array(
 		"post_type"					=> 'any',
-		"post_status"				=>	'any',
+		"post_status"				=>	array("publish","pending","draft","auto-draft","future","private","inherit","trash"),
 		"posts_per_page"		=>	100,
 		"meta_query"	=>	array(
 			array("key"		=>	"feature_tag")
