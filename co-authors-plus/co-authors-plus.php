@@ -857,11 +857,17 @@ class coauthors_plus {
 	 * Get matching authors based on a search value
 	 */
 	function search_authors( $search = '', $ignored_authors = array() ) {
-
+				
 		// Since 2.7, we're searching against the term description for the fields
 		// instead of the user details. If the term is missing, we probably need to
 		// backfill with user details. Let's do this first... easier than running
 		// an upgrade script that could break on a lot of users
+		
+		/*
+			Senning: Removed a big portion of this on March 12 to remove e-mail search
+				We'll probably lose this when the plugin is updated 
+				Carry the change over
+		*/
 		$args = array(
 				'count_total' => false,
 				'search' => sprintf( '*%s*', $search ),
@@ -873,45 +879,11 @@ class coauthors_plus {
 				),
 				'fields' => 'all_with_meta',
 			);
+		$args = apply_filters('coauthors_search_get_users_args',$args);
 		add_filter( 'pre_user_query', array( $this, 'filter_pre_user_query' ) );
 		$found_users = get_users( $args );
 		remove_filter( 'pre_user_query', array( $this, 'filter_pre_user_query' ) );
 
-		foreach( $found_users as $found_user ) {
-			$term = $this->get_author_term( $found_user );
-			if ( empty( $term ) || empty( $term->description ) ) {
-				$this->update_author_term( $found_user );
-			}
-		}
-
-		$args = array(
-				'search' => $search,
-				'get' => 'all',
-				'number' => 1000,
-			);
-		add_filter( 'terms_clauses', array( $this, 'filter_terms_clauses' ) );
-		$found_terms = get_terms( $this->coauthor_taxonomy, $args );
-		remove_filter( 'terms_clauses', array( $this, 'filter_terms_clauses' ) );
-		if ( empty( $found_terms ) )
-			return array();
-
-		// Get the co-author objects
-		$found_users = array();
-		foreach( $found_terms as $found_term ) {
-			$found_user = $this->get_coauthor_by( 'user_nicename', $found_term->slug );
-			if ( !empty( $found_user ) )
-				$found_users[$found_user->user_login] = $found_user;
-		}
-
-		// Allow users to always filter out certain users if needed (e.g. administrators)
-		$ignored_authors = apply_filters( 'coauthors_edit_ignored_authors', $ignored_authors );
-		foreach( $found_users as $key => $found_user ) {
-			// Make sure the user is contributor and above (or a custom cap)
-			if ( in_array( $found_user->user_login, $ignored_authors ) )
-				unset( $found_users[$key] );
-			else if ( $found_user->type == 'wpuser' && false === $found_user->has_cap( apply_filters( 'coauthors_edit_author_cap', 'edit_posts' ) ) )
-				unset( $found_users[$key] );
-		}
 		return (array) $found_users;
 	}
 

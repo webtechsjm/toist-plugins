@@ -37,9 +37,12 @@ function feature_fix_page(){
 		$val = get_post_meta($id,'feature_tag',true);
 		update_post_meta($id,'featured_tag',$val);
 		delete_post_meta($id,'feature_tag');
+		
+		echo get_permalink()."<br />";
+		
 	endwhile;
 	
-	printf("%d posts fixed",
+	printf("<strong>%d posts fixed</strong>",
 		count($posts->posts)
 	);
 	
