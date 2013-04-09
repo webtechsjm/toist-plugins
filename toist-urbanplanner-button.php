@@ -220,7 +220,7 @@ function exclude_from_newsfeed(){
 	//Should posts be included by default?
 	$default_inclusion = get_option('default_inclusion');
 	
-	if(current_user_can('publish_posts')){
+	if(current_user_can('publish_posts') || current_user_can('contributor') || current_user_can('author')){
 	?>
 		<div class="misc-pub-section" style="border-top: 1px solid #eee;">
 			<?php
@@ -280,14 +280,11 @@ function exclude_from_newsfeed_save($post_id){
 		|| (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
 		|| !current_user_can('edit_events',$post_id)
 		) return $post_id;
-	
-	$current = get_post_meta($post_id,'_exclude_from_feed',true);
 		
 	if(!isset($_POST['newsfeed_include'])){
 		update_post_meta($post_id,'_include_in_feed','false');
-	}elseif(isset($_POST['newsfeed_include'])){
+	}else{
 		update_post_meta($post_id,'_include_in_feed','true');
-		
 	}
 	
 }
