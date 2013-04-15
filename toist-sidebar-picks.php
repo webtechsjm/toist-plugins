@@ -48,7 +48,7 @@ class Toist_Editors_Picks extends WP_Widget {
 					array(
 						'taxonomy'	=>	'event-tag',
 						'field'			=>	'slug',
-						'terms'			=>	'editors-pick-2',
+						'terms'			=>	'editors-pick',
 						'include_children'	=> false
 					)
 				),
