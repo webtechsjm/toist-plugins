@@ -142,7 +142,7 @@ class Toist_Hub{
 		//at some point, we'll want to get hub id from the shortcode attr
 		$numbers = array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve");
 		$return = '';
-		
+				
 		$hub = json_decode(get_post_meta(get_the_ID(),'toist_hub',true));
 		$post_ids = array();
 		
@@ -229,13 +229,13 @@ class Toist_Hub{
 				if($block->bg){
 					$bg = sprintf(' style="background:%s" ',$block->bg);
 				}else{$bg='';}
-				
+								
 				$return .= sprintf($block_format,
 					$block_class,
 					$post_list[$block->ids]['permalink'],
 					$title,
 					$thumbnail,
-					preg_replace('|\[(.+?)\](.+?\[/\\1\])?|s', '',$content),
+					strip_shortcodes($content),
 					$bg
 					);
 			}else{
@@ -265,7 +265,7 @@ class Toist_Hub{
 						$post_list[$id]['permalink'],
 						$title,
 						$thumbnail,
-						preg_replace('|\[(.+?)\](.+?\[/\\1\])?|s', '',$content)
+						strip_shortcodes($content)
 						);
 				}
 				$return .= sprintf($block_container,
