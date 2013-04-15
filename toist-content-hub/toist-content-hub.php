@@ -186,7 +186,7 @@ class Toist_Hub{
 		//render the blocks
 		$block_format = '<article class="%1$s"%6$s><h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%5$s</div>%4$s</article>';
 		$block_container = '<div class="%1$s"%3$s>%2$s</div>';
-		$subblock_format = '<article><h1><a href="%s">%s</a></h1>%s<div class="excerpt">%s</div></article>';
+		$subblock_format = '<article class="%5$s">%3$s<h1><a href="%1$s">%2$s</a></h1><div class="excerpt">%4$s</div></article>';
 		
 		$return .= '<div class="hub-container"><div class="row">';
 		$grid_cols = 0;
@@ -201,7 +201,7 @@ class Toist_Hub{
 			if($block->rows) $block_class .= "r".$block->rows." rows ";
 			if($block->scroll=='true') $block_class .= "scroll ";
 			if(intval($block->columns) > 3 ){$block_class .= "long ";}			
-			else{$block_class .= "tall";}
+			else{$block_class .= "tall ";}
 			
 			if(!strpos($block->ids,',')){
 				if($block->title == 'alt_title'){
@@ -225,6 +225,7 @@ class Toist_Hub{
 					preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
 					if(is_array($matches)) $thumbnail = $matches[0];
 				}
+				if($thumbnail) $block_class .= "has_thumb ";
 				
 				if($block->bg){
 					$bg = sprintf(' style="background:%s" ',$block->bg);
@@ -242,6 +243,7 @@ class Toist_Hub{
 				$ids = explode(',',$block->ids);
 				$subblock = '';
 				foreach($ids as $id){
+					$class = array();
 					$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
 					//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
 					$thumbnail = get_the_post_thumbnail($id,'medium');
@@ -249,6 +251,7 @@ class Toist_Hub{
 						preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
 						if(is_array($matches)) $thumbnail = $matches[0];
 					}
+					if($thumbnail) $class[] = 'has_thumb';
 					switch($block->text){
 						case "dek": $content = $post_list[$id]['dek']; break;
 						case "alt_dek": $content = $post_list[$id]['alt_dek']; break;
@@ -265,7 +268,8 @@ class Toist_Hub{
 						$post_list[$id]['permalink'],
 						$title,
 						$thumbnail,
-						strip_shortcodes($content)
+						strip_shortcodes($content),
+						join(' ',$class)
 						);
 				}
 				$return .= sprintf($block_container,
