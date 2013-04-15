@@ -26,7 +26,7 @@ class Toist_Editors_Picks extends WP_Widget {
 		extract($args, EXTR_SKIP);
 		
 		//check if we have this cached
-		//$picks = get_transient('toist-editors-picks');
+		$picks = get_transient('toist-editors-picks');
 		$picks = false;
 		if($picks === false){
 			//remove_filter('pre_get_posts','noindex_remover');
