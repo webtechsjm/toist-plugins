@@ -255,12 +255,15 @@ class Toist_Hub{
 						case "custom": $content = strip_tags($block->customtext); break;
 						default: $content = $post_list[$id]['content']; break;
 					}
+					if($block->title == 'title'){
+						$title = $post_list[$id]['title'];
+					}else{$title = $post_list[$id]['alt_title'];}
 					if($block->bg){
 						$bg = sprintf(' style="background:%s" ',$block->bg);
 					}else{$bg='';}
 					$subblock .= sprintf($subblock_format,
 						$post_list[$id]['permalink'],
-						$post_list[$id]['title'],
+						$title,
 						$thumbnail,
 						$content
 						);
