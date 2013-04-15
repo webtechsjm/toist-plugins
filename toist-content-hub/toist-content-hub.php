@@ -157,13 +157,15 @@ class Toist_Hub{
 				$post_ids = array_merge($post_ids,$ids);
 			}
 		}
-						
+		
+		remove_filter('pre_get_posts','noindex_remover');
 		//remove duplicate IDs
 		$posts = new WP_Query(array(
 			'post_type'		=>	'any',
 			'post_status'	=>	'any',
 			'post__in' 		=> $post_ids
 		));
+		add_filter('pre_get_posts','noindex_remover');
 		
 		$post_list = array();
 		
