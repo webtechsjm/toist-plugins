@@ -26,13 +26,41 @@ class Toist_Editors_Picks extends WP_Widget {
 		extract($args, EXTR_SKIP);
 		
 		//check if we have this cached
-		$picks = get_transient('toist-editors-picks');
+		//$picks = get_transient('toist-editors-picks');
+		$picks = false;
 		if($picks === false){
-			$picks = get_posts(array('numberposts'=>$instance['number'], 'tag'=>'editors-pick'));
+			//remove_filter('pre_get_posts','noindex_remover');
+			global $wp_filter;
+			$filters = $wp_filter['pre_get_posts'];
+			$wp_filter['pre_get_posts'] = array();
+			$q = new WP_Query(array(
+				'post_type'	=> 'any',
+				'posts_per_page'	=>	$instance['number'],
+				//'tag'	=>	'editors-pick',
+				'tax_query'	=>	array(
+					'relation'		=>	'OR',
+					array(
+						'taxonomy'	=>	'post_tag',
+						'field'			=>	'slug',
+						'terms'			=>	'editors-pick',
+						'include_children'	=>	false
+					),
+					array(
+						'taxonomy'	=>	'event-tag',
+						'field'			=>	'slug',
+						'terms'			=>	'editors-pick-2',
+						'include_children'	=> false
+					)
+				),
+				'suppress_filters'	=>	'true'
+			));
+			//add_filter('pre_get_posts','noindex_remover');
+			$wp_filter['pre_get_posts'] = $filters;
+			$picks = $q->posts;
 			set_transient('toist-editors-picks',$picks,15 * MINUTE_IN_SECONDS);
 		}
 				
-		if($picks): 
+		if($picks && count($picks) > 0): 
 		echo $before_widget;
 		global $post;
 		$count = 1;
