@@ -235,7 +235,7 @@ class Toist_Hub{
 					$post_list[$block->ids]['permalink'],
 					$title,
 					$thumbnail,
-					$content,
+					preg_replace('|\[(.+?)\](.+?\[/\\1\])?|s', '',$content),
 					$bg
 					);
 			}else{
@@ -265,7 +265,7 @@ class Toist_Hub{
 						$post_list[$id]['permalink'],
 						$title,
 						$thumbnail,
-						$content
+						preg_replace('|\[(.+?)\](.+?\[/\\1\])?|s', '',$content)
 						);
 				}
 				$return .= sprintf($block_container,
