@@ -61,6 +61,7 @@ class Toist_Hub{
 		}
 		
 		//remove duplicate IDs
+		remove_all_filters('pre_get_posts');
 		$posts = new WP_Query(array(
 			'post_type'	=>	'any',
 			'post__in' 	=> $post_ids
