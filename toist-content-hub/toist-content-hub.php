@@ -284,7 +284,8 @@ class Toist_Hub{
 		if(isset($_POST['keyword'])) $args['s'] = $_POST['keyword'];
 		//we might want to change this later to allow using ways to filter by cats/tags
 		if(isset($_POST['hubsearch_page'])) $args['paged'] = intval($_POST['hubsearch_page']);
-			
+		
+		remove_all_filters('pre_get_posts');	
 		$posts = new WP_Query($args);
 		
 		$return = array();
