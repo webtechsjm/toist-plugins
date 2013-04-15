@@ -16,7 +16,6 @@ class Toist_Hub{
 	function __construct(){
 		add_action('media_buttons_context', array($this,'add_hub_button'));
 		add_action('admin_enqueue_scripts',array($this,'queue_scripts'));
-		add_action('admin_menu',array($this,'hub_maker_page'));
 		add_action('wp_ajax_toist_hub_load',array($this,'ajax_load_hub'));
 		add_action('wp_ajax_toist_hub_save',array($this,'ajax_save_hub'));
 		add_action('wp_ajax_toist_hub_query',array($this,'ajax_wp_query'));

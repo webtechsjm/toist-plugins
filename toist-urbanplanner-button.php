@@ -289,7 +289,7 @@ function exclude_from_newsfeed_save($post_id){
 	
 }
 
-function toist_quicktags( $args, $post_id ) 
+function toist_quicktags( $args) 
 { 
 ?>
 <script type="text/javascript">
