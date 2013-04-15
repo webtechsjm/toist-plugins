@@ -165,10 +165,11 @@ jQuery(document).ready(function($){
 		for(var att in settings){opts[att] = settings[att];}
 		$used[post.id] = post;
 	
-		var block = '<article class="{7} column" data-cols="{4}" data-rows="{5}" data-id="{0}"><header>{3}<h1>{1}</h1></header><div><p>{2}</p><p><label for="num_cols_{0}">Columns:</label><input id="num_cols_{0}" name="{0}-columns" class="cols" value="{4}" /><label for="num_rows_{0}">Rows:</label><input id="num_rows_{0}" name="{0}-rows" class="rows" value="{5}" /></p><p><label for="ids_{0}">Post IDs:</label><input id="ids_{0}" value="{6}" name="{0}-ids" class="ids" /></p></div><div><a class="remove">Remove</a> | <a class="advanced">Advanced</a></div></article>'.format(
+		console.log(opts);
+		var block = '<article class="{7} column" data-cols="{4}" data-rows="{5}" data-id="{0}"><header>{3}<h1>{1}</h1></header><div>{2}<p><label for="num_cols_{0}">Columns:</label><input id="num_cols_{0}" name="{0}-columns" class="cols" value="{4}" /><label for="num_rows_{0}">Rows:</label><input id="num_rows_{0}" name="{0}-rows" class="rows" value="{5}" /></p><p><label for="ids_{0}">Post IDs:</label><input id="ids_{0}" value="{6}" name="{0}-ids" class="ids" /></p></div><div><a class="remove">Remove</a> | <a class="advanced">Advanced</a></div></article>'.format(
 			post.id,
 			post.title,
-			post.content,
+			(opts.text =='custom') ? '<textarea class="custom-text" name="'+post.id+'-customtext">'+opts.customtext+'</textarea>' : '<p>'+post.content+'</p>',
 			post.thumb,
 			opts.columns ? opts.columns: '',
 			opts.rows ? opts.rows: '',
@@ -256,14 +257,7 @@ jQuery(document).ready(function($){
 			data,
 			function(res){
 				$(res.structure).each(function(){
-					var struct = {};
-					struct.ids = this.ids;
-					if(this.columns) struct.columns = this.columns;
-					if(this.rows) struct.rows = this.rows;
-					if(this.title) struct.title = this.title;
-					if(this.text) struct.text = this.text;
-					if(this.bg) struct.bg = this.bg;
-					
+					var struct = this;
 					if(this.ids.indexOf(',') == -1){
 						add_to_hub(res.posts[this.ids],struct);
 					}else{
