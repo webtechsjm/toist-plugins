@@ -142,145 +142,150 @@ class Toist_Hub{
 		//at some point, we'll want to get hub id from the shortcode attr
 		$numbers = array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve");
 		$return = '';
-				
-		$hub = json_decode(get_post_meta(get_the_ID(),'toist_hub',true));
-		$post_ids = array();
 		
-		//when we support multiple hubs per page, let's load all the ids up in here
-		foreach($hub as $block){
-			//test for commas; can specific multiple IDs
+		$return = get_transient('toist_hub_'.get_the_ID());
+		if($return === false){
+			$hub = json_decode(get_post_meta(get_the_ID(),'toist_hub',true));
+			$post_ids = array();
+		
+			//when we support multiple hubs per page, let's load all the ids up in here
+			foreach($hub as $block){
+				//test for commas; can specific multiple IDs
 			
-			if(!strpos($block->ids,',')){
-				$post_ids[] = intval($block->ids);
-			}else{
-				$ids = explode(',',$block->ids);
-				$post_ids = array_merge($post_ids,$ids);
-			}
-		}
-		
-		remove_filter('pre_get_posts','noindex_remover');
-		//remove duplicate IDs
-		$posts = new WP_Query(array(
-			'post_type'		=>	'any',
-			'post_status'	=>	'any',
-			'post__in' 		=> $post_ids
-		));
-		add_filter('pre_get_posts','noindex_remover');
-		
-		$post_list = array();
-		
-		
-		foreach($posts->posts as $post){
-			$post_list[$post->ID] = array(
-				'author'		=>	$post->post_author,
-				'title'			=>	$post->post_title,
-				'content'		=>	$post->post_content,
-				'date'			=>	$post->post_date,
-				'permalink'	=>	get_permalink($post->ID),
-				'alt_title'	=>	get_post_meta($post->ID,'alt_title',true),
-				'dek'				=>	get_post_meta($post->ID,'dek',true),
-				'alt_dek'		=>	get_post_meta($post->ID,'alt_dek',true)
-			);
-		}
-				
-		//render the blocks
-		$block_format = '<article class="%1$s"%6$s><h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%5$s</div>%4$s</article>';
-		$block_container = '<div class="%1$s"%3$s>%2$s</div>';
-		$subblock_format = '<article class="%5$s">%3$s<h1><a href="%1$s">%2$s</a></h1><div class="excerpt">%4$s</div></article>';
-		
-		$return .= '<div class="hub-container"><div class="row">';
-		$grid_cols = 0;
-		foreach($hub as $block){
-			$block_class = '';
-			if($grid_cols + $block->columns > 12){
-				$grid_cols = $block->columns;
-				$return .= '</div><div class="row">';
-			}else{$grid_cols += $block->columns;}
-						
-			if($block->columns) $block_class .= $numbers[$block->columns]." columns ";
-			if($block->rows) $block_class .= "r".$block->rows." rows ";
-			if($block->scroll=='true') $block_class .= "scroll ";
-			if(intval($block->columns) > 3 ){$block_class .= "long ";}			
-			else{$block_class .= "tall ";}
-			
-			if(!strpos($block->ids,',')){
-				if($block->title == 'alt_title'){
-					$title = $post_list[$block->ids]['alt_title'];
+				if(!strpos($block->ids,',')){
+					$post_ids[] = intval($block->ids);
 				}else{
-					$title = $post_list[$block->ids]['title'];
+					$ids = explode(',',$block->ids);
+					$post_ids = array_merge($post_ids,$ids);
+				}
+			}
+		
+			remove_filter('pre_get_posts','noindex_remover');
+			//remove duplicate IDs
+			$posts = new WP_Query(array(
+				'post_type'		=>	'any',
+				'post_status'	=>	'any',
+				'post__in' 		=> $post_ids
+			));
+			add_filter('pre_get_posts','noindex_remover');
+		
+			$post_list = array();
+		
+		
+			foreach($posts->posts as $post){
+				$post_list[$post->ID] = array(
+					'author'		=>	$post->post_author,
+					'title'			=>	$post->post_title,
+					'content'		=>	$post->post_content,
+					'date'			=>	$post->post_date,
+					'permalink'	=>	get_permalink($post->ID),
+					'alt_title'	=>	get_post_meta($post->ID,'alt_title',true),
+					'dek'				=>	get_post_meta($post->ID,'dek',true),
+					'alt_dek'		=>	get_post_meta($post->ID,'alt_dek',true)
+				);
+			}
+				
+			//render the blocks
+			$block_format = '<article class="%1$s"%6$s><h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%5$s</div>%4$s</article>';
+			$block_container = '<div class="%1$s"%3$s>%2$s</div>';
+			$subblock_format = '<article class="%5$s">%3$s<h1><a href="%1$s">%2$s</a></h1><div class="excerpt">%4$s</div></article>';
+		
+			$return .= '<div class="hub-container"><div class="row">';
+			$grid_cols = 0;
+			foreach($hub as $block){
+				$block_class = '';
+				if($grid_cols + $block->columns > 12){
+					$grid_cols = $block->columns;
+					$return .= '</div><div class="row">';
+				}else{$grid_cols += $block->columns;}
+						
+				if($block->columns) $block_class .= $numbers[$block->columns]." columns ";
+				if($block->rows) $block_class .= "r".$block->rows." rows ";
+				if($block->scroll=='true') $block_class .= "scroll ";
+				if(intval($block->columns) > 3 ){$block_class .= "long ";}			
+				else{$block_class .= "tall ";}
+			
+				if(!strpos($block->ids,',')){
+					if($block->title == 'alt_title'){
+						$title = $post_list[$block->ids]['alt_title'];
+					}else{
+						$title = $post_list[$block->ids]['title'];
+						}
+					//$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
+					switch($block->text){
+						case "dek": $content = $post_list[$block->ids]['dek']; break;
+						case "alt_dek": $content = $post_list[$block->ids]['alt_dek']; break;
+						case "custom": $content = stripslashes($block->customtext); break;
+						default: $content = $post_list[$block->ids]['content']; break;
 					}
-				//$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
-				switch($block->text){
-					case "dek": $content = $post_list[$block->ids]['dek']; break;
-					case "alt_dek": $content = $post_list[$block->ids]['alt_dek']; break;
-					case "custom": $content = stripslashes($block->customtext); break;
-					default: $content = $post_list[$block->ids]['content']; break;
-				}
-				//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
-				//$content = $post_list[$block->ids]['content'];
-				//if(intval($block->columns) <= 5 ){$content = $dek ?: $content;}
-				
-				$thumbnail = get_the_post_thumbnail($block->ids,'medium');
-				if($thumbnail == ''){
-					preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
-					if(is_array($matches)) $thumbnail = $matches[0];
-				}
-				if($thumbnail) $block_class .= "has_thumb ";
-				
-				if($block->bg){
-					$bg = sprintf(' style="background:%s" ',$block->bg);
-				}else{$bg='';}
-								
-				$return .= sprintf($block_format,
-					$block_class,
-					$post_list[$block->ids]['permalink'],
-					$title,
-					$thumbnail,
-					strip_shortcodes($content),
-					$bg
-					);
-			}else{
-				$ids = explode(',',$block->ids);
-				$subblock = '';
-				foreach($ids as $id){
-					$class = array();
-					$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
 					//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
-					$thumbnail = get_the_post_thumbnail($id,'medium');
+					//$content = $post_list[$block->ids]['content'];
+					//if(intval($block->columns) <= 5 ){$content = $dek ?: $content;}
+				
+					$thumbnail = get_the_post_thumbnail($block->ids,'medium');
 					if($thumbnail == ''){
 						preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
 						if(is_array($matches)) $thumbnail = $matches[0];
 					}
-					if($thumbnail) $class[] = 'has_thumb';
-					switch($block->text){
-						case "dek": $content = $post_list[$id]['dek']; break;
-						case "alt_dek": $content = $post_list[$id]['alt_dek']; break;
-						case "custom": $content = strip_tags($block->customtext); break;
-						default: $content = $post_list[$id]['content']; break;
-					}
-					if($block->title == 'title'){
-						$title = $post_list[$id]['title'];
-					}else{$title = $post_list[$id]['alt_title'];}
+					if($thumbnail) $block_class .= "has_thumb ";
+				
 					if($block->bg){
 						$bg = sprintf(' style="background:%s" ',$block->bg);
+						$block_class .= "has_bg ";
 					}else{$bg='';}
-					$subblock .= sprintf($subblock_format,
-						$post_list[$id]['permalink'],
+								
+					$return .= sprintf($block_format,
+						$block_class,
+						$post_list[$block->ids]['permalink'],
 						$title,
 						$thumbnail,
 						strip_shortcodes($content),
-						join(' ',$class)
+						$bg
+						);
+				}else{
+					$ids = explode(',',$block->ids);
+					$subblock = '';
+					foreach($ids as $id){
+						$class = array();
+						$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
+						//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
+						$thumbnail = get_the_post_thumbnail($id,'medium');
+						if($thumbnail == ''){
+							preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
+							if(is_array($matches)) $thumbnail = $matches[0];
+						}
+						if($thumbnail) $class[] = 'has_thumb';
+						switch($block->text){
+							case "dek": $content = $post_list[$id]['dek']; break;
+							case "alt_dek": $content = $post_list[$id]['alt_dek']; break;
+							case "custom": $content = strip_tags($block->customtext); break;
+							default: $content = $post_list[$id]['content']; break;
+						}
+						if($block->title == 'title'){
+							$title = $post_list[$id]['title'];
+						}else{$title = $post_list[$id]['alt_title'];}
+						if($block->bg){
+							$bg = sprintf(' style="background:%s" ',$block->bg);
+						}else{$bg='';}
+						$subblock .= sprintf($subblock_format,
+							$post_list[$id]['permalink'],
+							$title,
+							$thumbnail,
+							strip_shortcodes($content),
+							join(' ',$class)
+							);
+					}
+					$return .= sprintf($block_container,
+						$block_class,
+						$subblock,
+						$bg
 						);
 				}
-				$return .= sprintf($block_container,
-					$block_class,
-					$subblock,
-					$bg
-					);
 			}
-		}
 		
-		$return .= '</div><hr /></div>'; //end .hub-container
+			$return .= '</div><hr /></div>'; //end .hub-container
+			set_transient('toist_hub_'.get_the_ID(),$return,15 * MINUTE_IN_SECONDS);
+		}
 		return $return;
 	}
 	
