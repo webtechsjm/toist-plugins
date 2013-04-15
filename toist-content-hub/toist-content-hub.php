@@ -244,7 +244,7 @@ class Toist_Hub{
 				foreach($ids as $id){
 					$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
 					//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
-					$thumbnail = get_the_post_thumbnail($block->ids,'medium');
+					$thumbnail = get_the_post_thumbnail($id,'medium');
 					if($thumbnail == ''){
 						preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
 						if(is_array($matches)) $thumbnail = $matches[0];
