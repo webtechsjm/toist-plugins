@@ -150,7 +150,6 @@ jQuery(document).ready(function($){
 		var opts = '';
 		$(options).each(function(){
 			var selected = '';
-			//console.log(this.name,this.value,selected);
 			if(this.name == current){selected = ' selected="selected"';}
 			opts += '<option value="{0}"{2}>{1}</option>'.format(this.name,this.value,selected);
 		});
@@ -165,7 +164,6 @@ jQuery(document).ready(function($){
 		for(var att in settings){opts[att] = settings[att];}
 		$used[post.id] = post;
 	
-		console.log(opts);
 		var block = '<article class="{7} column" data-cols="{4}" data-rows="{5}" data-id="{0}"><header>{3}<h1>{1}</h1></header><div>{2}<p><label for="num_cols_{0}">Columns:</label><input id="num_cols_{0}" name="{0}-columns" class="cols" value="{4}" /><label for="num_rows_{0}">Rows:</label><input id="num_rows_{0}" name="{0}-rows" class="rows" value="{5}" /></p><p><label for="ids_{0}">Post IDs:</label><input id="ids_{0}" value="{6}" name="{0}-ids" class="ids" /></p></div><div><a class="remove">Remove</a> | <a class="advanced">Advanced</a></div></article>'.format(
 			post.id,
 			post.title,
@@ -194,7 +192,11 @@ jQuery(document).ready(function($){
 			[{name:'false',value:'No scrolling'},
 			{name:'true',value:'Scrolling enabled'}],
 			opts.scroll ? opts.scroll : '');
-		advanced.append(title_opt).append(text_opt).append(scroll).append(background);
+		var suppressImg = '<label>Suppress images</label>'+select_builder(post.id,'hideImg',
+			[{name:'false',value:'Show images'},
+			{name:'true',value:'Suppress images'}],
+			opts.hideImg ? opts.hideImg : '');
+		advanced.append(title_opt).append(text_opt).append(scroll).append(background).append(suppressImg);
 		$(block).append(advanced).appendTo($layout_pane);
 	}
 	

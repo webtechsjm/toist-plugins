@@ -220,13 +220,16 @@ class Toist_Hub{
 					//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
 					//$content = $post_list[$block->ids]['content'];
 					//if(intval($block->columns) <= 5 ){$content = $dek ?: $content;}
-				
-					$thumbnail = get_the_post_thumbnail($block->ids,'medium');
-					if($thumbnail == ''){
-						preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
-						if(is_array($matches)) $thumbnail = $matches[0];
+					if(isset($block->hideImg) && $block->hideImg == 'true'){
+						$thumbnail = '';
+					}else{
+						$thumbnail = get_the_post_thumbnail($block->ids,'medium');
+						if($thumbnail == ''){
+							preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
+							if(is_array($matches)) $thumbnail = $matches[0];
+						}
+						if($thumbnail) $block_class .= "has_thumb ";
 					}
-					if($thumbnail) $block_class .= "has_thumb ";
 				
 					if($block->bg){
 						$bg = sprintf(' style="background:%s" ',$block->bg);
@@ -248,12 +251,17 @@ class Toist_Hub{
 						$class = array();
 						$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
 						//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
-						$thumbnail = get_the_post_thumbnail($id,'medium');
-						if($thumbnail == ''){
-							preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
-							if(is_array($matches)) $thumbnail = $matches[0];
+						if(isset($block->hideImg) && $block->hideImg == 'true'){
+							$thumbnail = '';
+						}else{
+							$thumbnail = get_the_post_thumbnail($id,'medium');
+							if($thumbnail == ''){
+								preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
+								if(is_array($matches)) $thumbnail = $matches[0];
+							}
+							if($thumbnail) $class[] = 'has_thumb';
 						}
-						if($thumbnail) $class[] = 'has_thumb';
+						
 						switch($block->text){
 							case "dek": $content = $post_list[$id]['dek']; break;
 							case "alt_dek": $content = $post_list[$id]['alt_dek']; break;
