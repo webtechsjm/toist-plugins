@@ -36,7 +36,8 @@ class Toist_Editors_Picks extends WP_Widget {
 			$q = new WP_Query(array(
 				'post_type'	=> 'any',
 				'posts_per_page'	=>	$instance['number'],
-				//'tag'	=>	'editors-pick',
+				'tag'	=>	'editors-pick',
+				/*
 				'tax_query'	=>	array(
 					'relation'		=>	'OR',
 					array(
@@ -53,6 +54,7 @@ class Toist_Editors_Picks extends WP_Widget {
 					)
 				),
 				'suppress_filters'	=>	'true'
+				*/
 			));
 			//add_filter('pre_get_posts','noindex_remover');
 			$wp_filter['pre_get_posts'] = $filters;

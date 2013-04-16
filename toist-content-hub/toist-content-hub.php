@@ -142,8 +142,8 @@ class Toist_Hub{
 		$numbers = array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve");
 		$return = '';
 		
-		$return = get_transient('toist_hub_'.get_the_ID());
-		if($return === false){
+		//$return = get_transient('toist_hub_'.get_the_ID());
+		//if($return === false){
 			$hub = json_decode(get_post_meta(get_the_ID(),'toist_hub',true));
 			$post_ids = array();
 		
@@ -283,8 +283,8 @@ class Toist_Hub{
 			}
 		
 			$return .= '</div><hr /></div>'; //end .hub-container
-			set_transient('toist_hub_'.get_the_ID(),$return,15 * MINUTE_IN_SECONDS);
-		}
+			//set_transient('toist_hub_'.get_the_ID(),$return,15 * MINUTE_IN_SECONDS);
+		//}
 		return $return;
 	}
 	
