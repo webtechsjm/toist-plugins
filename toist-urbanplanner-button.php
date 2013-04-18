@@ -41,8 +41,8 @@ function make_weekend_planner($new = true){
 	
 	$html = '';
 	
-	$saturday->modify('this Saturday');
-	$sunday->modify('this Sunday');
+	$saturday->modify('this Saturday')->setTime(0,0,0);
+	$sunday->modify('this Sunday')->setTime(23,59,59);
 
 	if($new){
 		$query = eo_get_events(array(
@@ -50,16 +50,16 @@ function make_weekend_planner($new = true){
 		'event_start_after'	=>	$saturday->format('Y-m-d'),
 		'event_start_before'	=>	$sunday->format('Y-m-d'),
 		'meta_query'	=>	array(
-			'relation'		=>	'OR',
+			'relation'		=>	'AND',
 			array(
 				'key'				=>	'_eventorganiser_schedule_start_start',
-				'value'			=>	$saturday->format('Y-m-d'),
-				'compare'		=>	'LIKE'
+				'value'			=>	$saturday->format('Y-m-d H:i:s'),
+				'compare'		=>	'>'
 				),
 			array(
 				'key'				=>	'_eventorganiser_schedule_start_start',
-				'value'			=>	$sunday->format('Y-m-d'),
-				'compare'		=>	'LIKE'
+				'value'			=>	$sunday->format('Y-m-d H:i:s'),
+				'compare'		=>	'<'
 				)
 			)
 		));
@@ -69,16 +69,10 @@ function make_weekend_planner($new = true){
 			'event_start_after'	=>	$saturday->format('Y-m-d'),
 			'event_start_before'	=>	$sunday->format('Y-m-d'),
 			'meta_query'	=>	array(
-				'relation'		=>	'AND',
 				array(
 					'key'				=>	'_eventorganiser_schedule_start_start',
 					'value'			=>	$saturday->format('Y-m-d'),
-					'compare'		=>	'NOT LIKE'
-					),
-				array(
-					'key'				=>	'_eventorganiser_schedule_start_start',
-					'value'			=>	$sunday->format('Y-m-d'),
-					'compare'		=>	'NOT LIKE'
+					'compare'		=>	'<'
 					)
 				)
 			));
@@ -297,7 +291,7 @@ function toist_quicktags( $args)
 	function planner_maker(e,c,ed){
 	var events_url = 'http://torontoist.com/events/event/?ondate=';
 	
-	this.tagStart = '[eo_events ondate="'+Date.today().addDays(1).toString("yyyy-MM-dd")+'" meta_key="_eventorganiser_schedule_start_start" meta_value="'+Date.today().addDays(1).toString("yyyy-MM-dd")+'" meta_compare="LIKE"]<strong class="event-cat">%event_cats_terms%:</strong> %event_content% %event_location%, %start{g:i a}{}%, %event_price%. <a class="details" href="%event_url%">Details</a>[/eo_events] \n\n<h3 class="section-title">Ongoing&hellip;</h3> \n[eo_events ondate="'+Date.today().addDays(1).toString("yyyy-MM-dd")+'" meta_key="_eventorganiser_schedule_start_start" meta_value="'+Date.today().addDays(1).toString("yyyy-MM-dd")+'" meta_compare="NOT LIKE"]<strong class="event-cat">%event_cats_terms%:</strong> %event_content% %event_location%, %start{g:i a}{}%, %event_price%. <a class="details" href="%event_url%">Details</a>[/eo_events] '
+	this.tagStart = '[eo_events ondate="'+Date.today().addDays(1).toString("yyyy-MM-dd")+'" meta_key="_eventorganiser_schedule_start_start" meta_value="'+Date.today().addDays(1).toString("yyyy-MM-dd")+' 00:00:00" meta_compare=">"]<strong class="event-cat">%event_cats_terms%:</strong> %event_content% %event_location%, %start{g:i a}{}%, %event_price%. <a class="details" href="%event_url%">Details</a>[/eo_events] \n\n<h3 class="section-title">Ongoing&hellip;</h3> \n[eo_events ondate="'+Date.today().addDays(1).toString("yyyy-MM-dd")+'" meta_key="_eventorganiser_schedule_start_start" meta_value="'+Date.today().addDays(1).toString("yyyy-MM-dd")+'" meta_compare="<"]<strong class="event-cat">%event_cats_terms%:</strong> %event_content% %event_location%, %start{g:i a}{}%, %event_price%. <a class="details" href="%event_url%">Details</a>[/eo_events] '
 			+'\n\n<section class="side-nav"><h4>Happening soon:</h4><div class="clearfix"><a href="'+events_url+Date.today().addDays(2).toString("yyyy-MM-dd")+'">Tomorrow</a> <a href="'+events_url+Date.today().addDays(3).toString("yyyy-MM-dd")+'">'+Date.today().addDays(3).toString("dddd")+'</a> <a href="'+events_url+Date.today().addDays(4).toString("yyyy-MM-dd")+'">'+Date.today().addDays(4).toString("dddd")+'</a></div></section>'
 			+'\n\n<em>Urban Planner is</em> Torontoist<em>\'s guide to what\'s on in Toronto, published every weekday morning, and in a weekend edition Friday afternoons. If you have an event you\'d like considered, <a href="mailto:events@torontoist.com">email us</a> with all the details (including images, if you\'ve got any), ideally at least a week in advance.</em>';
 		
