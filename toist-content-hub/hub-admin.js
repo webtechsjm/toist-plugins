@@ -1,5 +1,6 @@
 jQuery(document).ready(function($){
 	var $hub_window = $overlay = $add_pane = $page_nav = $page_num = $page_max = $layout_pane = $posts = $meta_id = $footer = $post_search = false,
+			$dynamics = 0,
 			$used = [],
 			numbers = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
 			
@@ -9,7 +10,7 @@ jQuery(document).ready(function($){
 		}else{
 			$hub_window = $('<div class="media-modal wp-core-ui"></div>');
 			$add_pane = $("<div></div>");
-			var add_container = $('<section id="add_pane"><h1>Content</h1><div><input id="post_search" placeholder="Search for posts, pages, and any other type of content" /><button id="submit_search">Search</button></div></section>').append($add_pane);
+			var add_container = $('<section id="add_pane"><h1>Content</h1><div><input id="post_search" placeholder="Search for posts, pages, and any other type of content" /><button id="submit_search">Search</button></div><ul id="dynamic"><li data-type="dropdown">Dropdown</li></ul></section>').append($add_pane);
 			$page_num = $('<input id="page_num" type="number" />');
 			$page_max = $('<span id="page_max"></span>');
 			$page_nav = $('<div id="page-nav"></div>').append('<a class="before">&laquo;</a>').append($page_num).append($page_max).append('<a class="after">&raquo;</a>').insertBefore($add_pane);
@@ -50,6 +51,11 @@ jQuery(document).ready(function($){
 			var post = $.grep($posts,function(p){return p.id == pid});
 			//$used.push(post);
 			add_to_hub(post);
+			});
+		$("#dynamic").on("click","li",function(){
+				switch($(this).attr("data-type")){
+					case "dropdown": add_dropdown_to_hub(); break;
+				}
 			});
 		$layout_pane.on("change","input,textarea,select",function(){
 			var box = $(this);
@@ -200,6 +206,38 @@ jQuery(document).ready(function($){
 		$(block).append(advanced).appendTo($layout_pane);
 	}
 	
+	function add_dropdown_to_hub(settings = {}){
+		var defaults = {rows: '',columns:12,tag:'',field:''};
+		var opts = {};
+		if(post[0]) post = post[0];
+		for(var att in defaults){opts[att] = defaults[att];}
+		for(var att in settings){opts[att] = settings[att];}
+		
+		var block = '<article class="{7} dynamic column" style="background:{6}" data-cols="{4}" data-rows="{5}" data-id="{0}"><header><h1>{1}</h1></header><div>{2}<p><label for="num_cols_{0}">Columns:</label><input id="num_cols_{0}" name="{0}-columns" class="cols" value="{4}" /><label for="num_rows_{0}">Rows:</label><input id="num_rows_{0}" name="{0}-rows" class="rows" value="{5}" /></p><p><label for="tag_{0}">Tag slug:</label><input id="tag_{0}" value="{8}" name="{0}-tag" class="tag" /></p><p><label for="cf_{0}">Custom field:</label><input id="cf_{0}" value="{9}" name="{0}-cf" class="cf" /></p></div><div><a class="remove">Remove</a> | <a class="advanced">Advanced</a></div><input name="{0}-type"  value="dropdown" type="hidden" /></article>'.format(
+			'd'+$dynamics,
+			post.title,
+			'<textarea class="custom-text" name="d'+$dynamics+'-customtext">'+opts.customtext+'</textarea>',
+			'',
+			opts.columns ? opts.columns: '',
+			opts.rows ? opts.rows: '',
+			opts.bg ? opts.bg: '',
+			'dropdown ' + opts.columns ? numbers[opts.columns] : 'twelve',
+			opts.tag ? opts.tag : '', 
+			opts.cf ? opts.cf : ''
+		);
+		
+		var advanced = $('<div class="advanced"><a class="close">X</a></div>');
+		var background = '<label for="{0}-bg">Background</label><input id="{0}-bg" name="{0}-bg" class="bg" value="{1}" />'.format('d'+$dynamics,opts.bg?opts.bg:'');
+		var scroll = '<label>Allow scrolling</label>'+select_builder('d'+$dynamics,'scroll',
+			[{name:'false',value:'No scrolling'},
+			{name:'true',value:'Scrolling enabled'}],
+			opts.scroll ? opts.scroll : '');
+		advanced.append(scroll).append(background);
+		
+		$(block).append(advanced).appendTo($layout_pane);
+		$dynamics++;
+	}
+	
 	function save_hub(){
 		var fields = $layout_pane.find("input,textarea,select").serializeArray();
 		var layout = {};
@@ -260,7 +298,11 @@ jQuery(document).ready(function($){
 			function(res){
 				$(res.structure).each(function(){
 					var struct = this;
-					if(this.ids.indexOf(',') == -1){
+					if(this.type){
+						switch(this.type){
+							case 'dropdown': add_dropdown_to_hub(struct); break;
+						}
+					}else if(this.ids.indexOf(',') == -1){
 						add_to_hub(res.posts[this.ids],struct);
 					}else{
 						var ids = this.ids.split(',');

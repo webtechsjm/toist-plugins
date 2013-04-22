@@ -20,7 +20,7 @@ class Toist_Hub{
 		add_action('wp_ajax_toist_hub_save',array($this,'ajax_save_hub'));
 		add_action('wp_ajax_toist_hub_query',array($this,'ajax_wp_query'));
 		
-		add_action('admin_init',array($this,'options'));
+		//add_action('admin_init',array($this,'options'));
 		add_action('admin_menu',array($this,'hub_banner_page'));
 	}
 	
@@ -30,7 +30,7 @@ class Toist_Hub{
 	
 	function queue_scripts($hook){
 		if($hook == "post-new.php" || $hook == "post.php"){
-			wp_enqueue_style('torontoist_hub_admin',plugins_url('hub-admin.css',__FILE__));
+			wp_enqueue_style('torontoist_hub_admin',plugins_url('hub-admin.css',__FILE__),array(),'0.2');
 			wp_enqueue_script('torontoist_hub_admin',plugins_url('hub-admin.js',__FILE__));
 		}
 		wp_localize_script('torontoist_hub_admin','toistHub',array(
@@ -132,14 +132,176 @@ class Toist_Hub{
 			else $this->make_block();
 		}
 	}
-		
-	function make_block(){
 	
+	function make_block($block,$post='null',$format='block'){
+		if(!isset($block->type)){return self::make_post_block($block,$post,$format);
+		}else{
+			switch($block->type){
+				case "dropdown": return self::make_dropdown_block($block,$format);
+				default: return self::make_post_block($block,$post,$format); break;
+			}
+		}
+	}
+			
+	function make_post_block($block,$post,$format){
+		$block_format = '<article class="%1$s"%5$s>%6$s<h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%4$s</div>%7$s</article>';
+		$numbers = array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve");
+			
+		//title
+		if($block->title == 'alt_title'){$title = $post['alt_title'];
+		}else{$title = $post['title'];}
+			
+		//text
+		switch($block->text){
+			case "dek": $content = $post['dek']; break;
+			case "alt_dek": $content = $post['alt_dek']; break;
+			case "custom": $content = stripslashes($block->customtext); break;
+			default: $content = $post['content']; break;
+		}
+		
+		//image
+		if(isset($block->hideImg) && $block->hideImg == 'true'){
+			$thumbnail = '';
+		}else{
+			$thumbnail = get_the_post_thumbnail($block->ids,'medium');
+			if($thumbnail == ''){
+				preg_match('|<img[^>]+>|',$post['content'],$matches);
+				if(is_array($matches)) $thumbnail = $matches[0];
+			}
+			if($thumbnail) $block_class .= "has_thumb ";
+		}
+		
+		//class
+			//If admins can add arbitrary classes, explode on spaces and merge with this array
+		$class = array();
+		if($block->columns && $format == 'block') $class[] = $numbers[$block->columns]." columns";
+		if($block->rows) $class[] = "r".$block->rows." rows";
+		if($block->scroll=='true') $class[] = "scroll";
+		if(intval($block->columns) > 3 ){$class[] = "long";}			
+		else{$class []= "tall ";}
+			
+		//background
+		if($block->bg){
+			$bg = sprintf(' style="background:%s" ',$block->bg);
+			$class[] = "has_bg";
+		}else{$bg='';}
+		
+		//format
+		return sprintf($block_format,							//format
+			join(' ',$class),												//1. class
+			$post['permalink'],											//2. permalink
+			$title,																	//3. title
+			strip_shortcodes($content),							//4. content
+			$bg,																		//5. bg
+			$format == 'sub' ? $thumbnail : '',			//6. pre-content
+			$format == 'block' ? $thumbnail : ''		//7. post-content
+			);
+	}
+	
+	function make_dropdown_block($block,$post,$format){
+		/*
+		this needs to go before content, so we might need a hook to check for the URL, sadly
+		
+		if($_POST['redirect']){
+			$url = parse_url($_POST['redirect']);
+			$site = parse_url(site_url());
+			if($url['hostname'] == $site['hostname']) header('Location',$_POST['redirect']);
+		}
+		*/
+		if(!wp_script_is('toist-hub')){
+			$url = parse_url(site_url());
+			wp_enqueue_script('toist-hub',plugins_url('toist-hub.js',__FILE__),array('jquery'),'0.1',true);
+			wp_localize_script('toist-hub','toistHub',array(
+				'hostname'				=>	$url['host']
+				));
+		}
+		
+	
+		$query = array('post_type'=>'any','posts_per_page'=>-1);
+		$numbers = array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve");
+		$posts = false;
+		$return = '<form method="post" class="redirect_dropdown %s" style="background:%s"><h1>%s</h1><select name="redirect">%s</select><input type="submit" class="submit" value="%s" /></form>';
+		$query['tag_slug__in'] = explode(',',$block->tag);
+		
+		
+		$class = array();
+		if($block->columns) $class[] = $numbers[$block->columns]." columns";
+		if($block->rows) $class[] = "r".$block->rows." rows";
+		if($block->scroll=='true') $class[] = "scroll";
+		if(intval($block->columns) > 3 ){$class[] = "long";}			
+		else{$class []= "tall ";}
+				
+		switch($block->cf){
+			case "stars":
+				$query['meta_key'] = 'stars';
+				$query['orderby'] = 'meta_value_num';
+				$query['order']	= 'DESC';
+				$posts = get_posts($query);
+				//echo $posts->request;
+				break;
+			case '': 
+				//alphabetical
+				$posts = get_posts($query);
+				usort($posts,function($a,$b){
+					return (strip_tags($a->post_title) < strip_tags($b->post_title)) ? -1 : 1;
+				});
+				//map: strip_tags, use titles as key. Sort.
+				break;
+			default:
+				//order by arbitrary meta key
+				break;
+		}
+		if($posts && count($posts) > 0){
+			$options = '<option></option>';
+			foreach($posts as $post) 
+				$options .= sprintf('<option value="%s">%s (%s)</option>',
+					get_permalink($post->ID),
+					strip_tags($post->post_title),
+					self::create_stars(get_post_meta($post->ID,'stars',true))
+					);
+		}
+		
+		$return = sprintf($return,
+			join(' ',$class),
+			$block->bg ?: '',
+			$block->customtext,
+			$options,
+			($block->cta && $block->cta != '') ?: 'Go'
+			);
+		
+		return $return;
+		
+	}
+	
+	function create_stars($num){
+		$return = '';
+		for($i = 0; $i < 5; $i++){
+			if($num - $i >= 1){$return .= '&#9733;';}
+			elseif($num - $i > 0){ $return .= '&#9734;';}
+			else{$return .= '&#11090;';}
+		}
+		return $return;
+	}
+	
+	function make_html_block($block,$post,$format){
+		//block->type = 'html'
+		//block->content = <code>; sanitize before outputting
+	}
+	
+	function make_loop_block($block,$post,$format){
+		//Criteria:
+			//By tag: tag slug
+			//By cat: category slug
+			//By custom field: CF name, value
+			//By other meta: meta name, value
+		//Title
+		//Pre/post text
+		
 	}
 		
 	function make_blocks(){
-		//at some point, we'll want to get hub id from the shortcode attr
 		$numbers = array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve");
+		//at some point, we'll want to get hub id from the shortcode attr
 		$return = '';
 		
 		//$return = get_transient('toist_hub_'.get_the_ID());
@@ -183,110 +345,43 @@ class Toist_Hub{
 					'alt_dek'		=>	get_post_meta($post->ID,'alt_dek',true)
 				);
 			}
-				
+							
 			//render the blocks
-			$block_format = '<article class="%1$s"%6$s><h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%5$s</div>%4$s</article>';
 			$block_container = '<div class="%1$s"%3$s>%2$s</div>';
-			$subblock_format = '<article class="%5$s">%3$s<h1><a href="%1$s">%2$s</a></h1><div class="excerpt">%4$s</div></article>';
+			
 		
 			$return .= '<div class="hub-container"><div class="row">';
 			$grid_cols = 0;
 			foreach($hub as $block){
-				$block_class = '';
+				
+				//new row if the next block would overflow the grid
 				if($grid_cols + $block->columns > 12){
 					$grid_cols = $block->columns;
 					$return .= '</div><div class="row">';
 				}else{$grid_cols += $block->columns;}
-						
-				if($block->columns) $block_class .= $numbers[$block->columns]." columns ";
-				if($block->rows) $block_class .= "r".$block->rows." rows ";
-				if($block->scroll=='true') $block_class .= "scroll ";
-				if(intval($block->columns) > 3 ){$block_class .= "long ";}			
-				else{$block_class .= "tall ";}
-			
-				if(!strpos($block->ids,',')){
-					if($block->title == 'alt_title'){
-						$title = $post_list[$block->ids]['alt_title'];
-					}else{
-						$title = $post_list[$block->ids]['title'];
-						}
-					//$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
-					switch($block->text){
-						case "dek": $content = $post_list[$block->ids]['dek']; break;
-						case "alt_dek": $content = $post_list[$block->ids]['alt_dek']; break;
-						case "custom": $content = stripslashes($block->customtext); break;
-						default: $content = $post_list[$block->ids]['content']; break;
-					}
-					//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
-					//$content = $post_list[$block->ids]['content'];
-					//if(intval($block->columns) <= 5 ){$content = $dek ?: $content;}
-					if(isset($block->hideImg) && $block->hideImg == 'true'){
-						$thumbnail = '';
-					}else{
-						$thumbnail = get_the_post_thumbnail($block->ids,'medium');
-						if($thumbnail == ''){
-							preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
-							if(is_array($matches)) $thumbnail = $matches[0];
-						}
-						if($thumbnail) $block_class .= "has_thumb ";
-					}
 				
-					if($block->bg){
-						$bg = sprintf(' style="background:%s" ',$block->bg);
-						$block_class .= "has_bg ";
-					}else{$bg='';}
-								
-					$return .= sprintf($block_format,
-						$block_class,
-						$post_list[$block->ids]['permalink'],
-						$title,
-						$thumbnail,
-						strip_shortcodes($content),
-						$bg
-						);
+				if(!strpos($block->ids,',')){
+					$return .= self::make_block($block,$post_list[$block->ids]);
 				}else{
 					$ids = explode(',',$block->ids);
+					$class[] = $numbers[$block->columns]." columns";
+					if($block->rows) $class[] = "r".$block->rows." rows";
+					if($block->scroll=='true') $class[] = "scroll";
+					if(intval($block->columns) > 3 ){$class[] = "long";}			
+					else{$class []= "tall ";}
+					
 					$subblock = '';
 					foreach($ids as $id){
-						$class = array();
-						$title = $post_list[$block->ids]['alt_title'] ?: $post_list[$block->ids]['title'];
-						//$dek = $post_list[$block->ids]['alt_dek'] ?: $post_list[$block->ids]['dek'];
-						if(isset($block->hideImg) && $block->hideImg == 'true'){
-							$thumbnail = '';
-						}else{
-							$thumbnail = get_the_post_thumbnail($id,'medium');
-							if($thumbnail == ''){
-								preg_match('|<img[^>]+>|',$post_list[$block->ids]['content'],$matches);
-								if(is_array($matches)) $thumbnail = $matches[0];
-							}
-							if($thumbnail) $class[] = 'has_thumb';
-						}
-						
-						switch($block->text){
-							case "dek": $content = $post_list[$id]['dek']; break;
-							case "alt_dek": $content = $post_list[$id]['alt_dek']; break;
-							case "custom": $content = strip_tags($block->customtext); break;
-							default: $content = $post_list[$id]['content']; break;
-						}
-						if($block->title == 'title'){
-							$title = $post_list[$id]['title'];
-						}else{$title = $post_list[$id]['alt_title'];}
-						if($block->bg){
-							$bg = sprintf(' style="background:%s" ',$block->bg);
-						}else{$bg='';}
-						$subblock .= sprintf($subblock_format,
-							$post_list[$id]['permalink'],
-							$title,
-							$thumbnail,
-							strip_shortcodes($content),
-							join(' ',$class)
-							);
+						$subblock .= self::make_block($block,$post_list[$id],'sub');
 					}
 					$return .= sprintf($block_container,
-						$block_class,
+						join(' ',$class),
 						$subblock,
 						$bg
+					
 						);
+					
+
 				}
 			}
 		
@@ -295,6 +390,8 @@ class Toist_Hub{
 		//}
 		return $return;
 	}
+	
+	function dummy(){}
 	
 	function ajax_wp_query(){
 		$this->ajax_validate();
@@ -387,59 +484,17 @@ class Toist_Hub{
 		</div>
 		
 		<?php
-		
-		/*
-		?>
-		<div class="wrap">
-			<?php screen_icon('options-general'); ?>
-			<h2>Coverage Hub Banner</h2>
-			<form action="options.php" method="POST">
-				<?php settings_fields('hub-banner'); ?>
-				<?php do_settings_sections('hub-banner'); ?>
-				<?php submit_button(); ?>
-			</form>
-		</div>
-		<?php
-		*/
 	}
 	
-	function options(){
 	/*
-		add_settings_section(
-			'toist_banner_opts',
-			'Special Coverage Banner',
-			array($this,'generic_form'),
-			'toist_banner'
-			);
-		add_settings_field(
-			'toist_banner_on',
-			'Bit.ly token',
-			array($this,'form_checkbox'),
-			'toist_banner',
-			'toist_banner_opts',
-			array(
-				'id'=>'toist_banner_on'
-				)
-		);
-		add_settings_field(
-			'toist_banner_code',
-			'Bit.ly token',
-			array($this,'form_textfield'),
-			'toist_banner',
-			'toist_banner_opts',
-			array(
-				'id'=>'toist_banner_on'
-				)
-		);
-				
-		register_setting('toist_banner','toist_banner_on');
-		register_setting('toist_banner','toist_banner_code');
-		*/
+	function options(){
+	
 	}
 	
 	function generic_form(){
 	
 	}
+	*/
 	
 	function ajax_validate(){
 		if(
@@ -517,28 +572,6 @@ class Toist_Hub{
 	
 		echo $html;
 	}
-	
-	/*
-	function closetags($html){
-		preg_match_all('#<([a-z]+)(?: .*)?(?<![/|/ ])>#iU', $html, $result);
-		$openedtags = $result[1];
-		preg_match_all('#</([a-z]+)>#iU', $html, $result);
-		$closedtags = $result[1];
-		$len_opened = count($openedtags);
-
-		if (count($closedtags) == $len_opened) {
-		  return $html;
-		}
-		$openedtags = array_reverse($openedtags);
-
-		for ($i=0; $i < $len_opened; $i++) {
-		  if (!in_array($openedtags[$i], $closedtags)){
-		    $html .= '</'.$openedtags[$i].'>';
-		  } else {
-		    unset($closedtags[array_search($openedtags[$i], $closedtags)]);    }
-		}  return $html;
-	}
-	*/
 }
 $toist_hub = new Toist_Hub;
 
