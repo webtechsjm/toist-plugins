@@ -244,7 +244,7 @@ class Toist_Urbanplanner{
 			$price = get_post_meta($post->ID,'price',true)?: "";
 						
 			$html .=	sprintf(
-				"\n<li class=\"%s\">\n<strong class=\"event-cat\">%s:</strong>%s %s, %s, %s. <a class=\"details\" href=\"%s\">Details</a>\n</li>",
+				"\n<li class=\"%s\">\n<strong class=\"event-cat\">%s:</strong> %s %s, %s, %s. <a class=\"details\" href=\"%s\">Details</a>\n</li>",
 				join(" ",$class),
 				$terms,
 				apply_filters('format_to_post',$post->post_content),
