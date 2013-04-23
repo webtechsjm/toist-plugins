@@ -1,0 +1,12 @@
+#toist_planner table{
+	width:100%;
+	text-align:center;
+	line-height: 2.5em;
+	}
+#toist_planner td{background: #fff;}
+#toist_planner td.past{color: #999;}
+#toist_planner td.selected{
+	background:#21759B;
+	color: #fff;
+	}
+#toist_planner a.button{padding:.3em 1em; margin:0.5em; height:auto;}

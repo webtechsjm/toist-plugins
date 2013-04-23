@@ -40,7 +40,7 @@ function featured_media_box($post){
 	wp_nonce_field(plugin_basename(__FILE__),'featured_media_nonce');
 	
 	$val = get_post_meta($post->ID,'_featured_media_url',true);
-	printf('<label for="featured_media_url">Embed URL:</label><input type="text" id="featured_media_ur" name="featured_media_url" value="%s">',
+	printf('<label for="featured_media_url">Media URL:</label><input type="text" id="featured_media_ur" name="featured_media_url" value="%s"><p><em>The actual URL, not the one provided from an embed code iframe. <a href="http://codex.wordpress.org/Embeds">Read more</a></em></p>',
 		$val);
 }
 
@@ -67,7 +67,10 @@ function the_featured_media($size = 'full'){
 		$thumb_id = get_post_thumbnail_id($post->ID);
 		$attachment =& get_post($thumb_id);
 		if($attachment->post_excerpt){
-			printf('<p class="wp-caption-text">%s</p>',$attachment->post_excerpt);
+			printf(
+				'<p class="wp-caption-text">%s</p>',
+				apply_filters('img_caption_shortcode',$attachment->post_excerpt)
+				);
 		}
 	}
 }
