@@ -93,6 +93,8 @@ class Toist_Urbanplanner{
 			$start_date = $end_date = $_GET['date'];
 		}else{die('No dates selected');}
 		
+		$multiday = $start_date !== $end_date;
+		
 		$new_events = eo_get_events(array(
 			'showpastevents'	=>	true,
 			'event_start_after'	=>	$start_date,
@@ -125,9 +127,9 @@ class Toist_Urbanplanner{
 				)
 			));
 		
-		echo $this->package_events($new_events);
+		echo $this->package_events($new_events, $multiday);
 		echo "\n\n<h3 class=\"section-title\">Ongoing…</h3>\n";
-		echo $this->package_events($ongoing_events);
+		echo $this->package_events($ongoing_events, $multiday);
 				
 		$one_day = new DateInterval("P1D");
 		$endDate = new DateTime($end_date);
@@ -157,7 +159,7 @@ class Toist_Urbanplanner{
 	}
 	
 	//Packages the events for easy parsing by the Planner maker
-	function package_events($events_array){
+	function package_events($events_array,$multiday){
 		$events = array();
 		$event_ids = array();
 		foreach($events_array as $event){
@@ -181,17 +183,18 @@ class Toist_Urbanplanner{
 			}
 		}
 		$formatted_list = sprintf("\n<ul class=\"eo-events eo-events-shortcode\">\n%s\n</ul>",
-			$this->format_events_list($events));
+			$this->format_events_list($events,$multiday));
 		return $formatted_list;
 	}
 	
 	//Formats the urban planner
-	function format_events_list($packaged_array){
+	function format_events_list($packaged_array,$multiday){
 		$html = '';
 	
 		foreach($packaged_array as $event){
 			$post = $event['post_data'];
 			$class = array("eo-event-future");
+			$start_string = array();
 		
 			//construct the category list
 			$terms = get_the_terms($post->ID,'event-category');
@@ -209,16 +212,16 @@ class Toist_Urbanplanner{
 			$start_times = array();
 			foreach($event['event_times'] as $times ){
 				$start = $times['start']->format("g i a");
-				$pieces = explode(' ',$start);
-				$start_times[$times['start']->format('l')][] = time_compact_ap_format($pieces[0],$pieces[1],$pieces[2]);
+				$pcs = explode(' ',$start);
+				if(!$multiday){
+					$start_string[] = time_compact_ap_format($pcs[0],$pcs[1],$pcs[2]);
+				}else{
+					$start_times[$times['start']->format('l')][] = time_compact_ap_format($pcs[0],$pcs[1],$pcs[2]);
+				}
 			}
-			$start_string = array();
-				
-			if(isset($start_times['Saturday'])){
-				$start_string[] = 'Saturday at '.join(', ',$start_times['Saturday']);
-			}
-			if(isset($start_times['Sunday'])){
-				$start_string[] = 'Sunday at '.join(', ',$start_times['Sunday']);
+			
+			if($multiday) foreach($start_times as $day=>$times){
+				$start_string[] = sprintf('%s at %s',$day,join(',',$times));
 			}
 		
 			//construct the venue string
@@ -239,7 +242,7 @@ class Toist_Urbanplanner{
 				$venue = "";
 			}
 			$price = get_post_meta($post->ID,'price',true)?: "";
-		
+						
 			$html .=	sprintf(
 				"\n<li class=\"%s\">\n<strong class=\"event-cat\">%s:</strong>%s %s, %s, %s. <a class=\"details\" href=\"%s\">Details</a>\n</li>",
 				join(" ",$class),
