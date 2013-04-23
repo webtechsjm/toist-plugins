@@ -38,11 +38,11 @@ jQuery(document).ready(function($){
 	}
 	
 	if(typeof(QTags) != 'undefined'){
-		QTags.addButton('event_more','Event details',event_more_tag,'','');
 		function event_more_tag(e,c,ed){
 			this.tagStart = '<!--more--><!--event_more-->';
 			QTags.TagButton.prototype.callback.call(this,e,c,ed);
 		}
+		QTags.addButton('event_more','Event details',event_more_tag,'','');
 	}
 
 });
