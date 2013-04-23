@@ -277,8 +277,8 @@ class Toist_Hub{
 		$return = '';
 		for($i = 0; $i < 5; $i++){
 			if($num - $i >= 1){$return .= '&#9733;';}
-			elseif($num - $i > 0){ $return .= '&#9734;';}
-			else{$return .= '&#183;';}
+			elseif($num - $i > 0){ $return .= '&#189;';}
+			else{$return .= '&#9734';}
 		}
 		return $return;
 	}
