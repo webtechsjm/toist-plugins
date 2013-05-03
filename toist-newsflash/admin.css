@@ -26,6 +26,7 @@ text-shadow:0 1px 0 #a00;
 	text-align:center;
 	margin: 0 0 2em;
 	padding: 0 0 7px;
+	max-width:980px;
 	}
 .breaking h2.meta{text-align:left;padding-left:2em;}
 .breaking h1,.breaking h2,.breaking .links{text-transform:uppercase;}
