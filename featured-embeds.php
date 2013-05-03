@@ -56,23 +56,42 @@ function featured_media_save_postdata($post_id){
 	update_post_meta($post_id,'_featured_media_url',$url);
 }
 
-function the_featured_media($size = 'full'){
+function get_featured_media($size = 'full',$gallery = false){
 	global $post;
 	$featured_embed = get_post_meta($post->ID,'_featured_media_url',true);
 	if($featured_embed && $embed = wp_oembed_get($featured_embed)){
 		echo $embed;
 	}elseif(has_post_thumbnail($post->ID)){
-							
-		the_post_thumbnail($size); 
+		if(!$gallery){
+			the_post_thumbnail($size); 
+		}else{
+			$images = explode(',',$gallery);
+			$url = get_attachment_link($images[0]);
+			$img = get_the_post_thumbnail($post->ID,$size);
+			
+			if(strpos($url,'?')){
+				$url.="&include=".$gallery;
+			}else{
+				$url.="?include=".$gallery;
+			}
+			
+			printf('<a href="%s">%s</a>',$url,$img);
+		}
+		
+		
 		$thumb_id = get_post_thumbnail_id($post->ID);
 		$attachment =& get_post($thumb_id);
 		if($attachment->post_excerpt){
-			printf(
+			return sprintf(
 				'<p class="wp-caption-text">%s</p>',
 				apply_filters('img_caption_shortcode',$attachment->post_excerpt)
 				);
 		}
 	}
+}
+
+function the_featured_media($size = 'full',$gallery=false){
+	echo get_featured_media($size,$gallery);
 }
 
 ?>
