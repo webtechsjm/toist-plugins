@@ -1,0 +1,70 @@
+label{
+width:60px;
+display:inline-block;
+}
+label.long{width:auto;}
+table#links{width:560px;text-align:left;}
+table#links input{width:100%;}
+#links a{
+	display:inline-block;
+	text-align:center;
+	text-decoration:none;
+	color:#21759b;
+}
+#links tbody a{
+background:linear-gradient(to bottom, #e00,#c00) #e00;
+border:none;
+border-radius:5px;
+color:#fff;
+font-weight:bold;
+text-shadow:0 1px 0 #a00;
+}
+#newsflash_label,#newsflash_headline,#newsflash_dek{width:500px;}
+#newsflash_accent,#newsflash_background{width:6em; margin-right:6em;}
+
+.breaking{
+	text-align:center;
+	margin: 0 0 2em;
+	padding: 0 0 7px;
+	}
+.breaking h2.meta{text-align:left;padding-left:2em;}
+.breaking h1,.breaking h2,.breaking .links{text-transform:uppercase;}
+.breaking h2.meta{
+	text-align:left;
+	border-top:4px solid #fff;
+	border-bottom:4px solid #fff;
+	font-size: 1em;
+	background:#000;
+	color:#fff;
+	font-weight: 600;
+	line-height:1;
+	padding:6px 4px;
+	text-shadow:none;
+	font-weight:700;
+}
+.breaking h1{font-size:3.25em; margin:0.2em 0 0;font-weight:bold; line-height:1;}
+.breaking h3{color: #888;font-size:2em;margin:0;line-height:1;font-weight:bold;}
+.breaking .links{margin: 12px 0 0;}
+.breaking .links a{margin:0 3em;font-weight:bold;display:inline-block;}
+
+.breaking.Blue{background-color:#e4f6fc;}
+.breaking.Blue h2{border-color:#2fb8e6;}
+.breaking.Blue .links a:link{color:#2fb8e6;}
+.breaking.Green{background-color:#f6f9e7;}
+.breaking.Green h2{border-color:#b8d142;}
+.breaking.Green .links a:link{color:#b8d142;}
+.breaking.Purple{background-color:#f3e8f2;}
+.breaking.Purple h2{border-color:#a24a9e;}
+.breaking.Purple .links a:link{color:#a24a9e;}
+.breaking.Salmon{background-color:#fee9e8;}
+.breaking.Salmon h2{border-color:#fb584f;}
+.breaking.Salmon .links a:link{color:#fb584f;}
+.breaking.Brown{background-color:#f3e9df;}
+.breaking.Brown h2{border-color:#a2560b;}
+.breaking.Brown .links a:link{color:#a2560b;}
+.breaking.Grey{background-color:#e9e9e9;}
+.breaking.Grey h2{border-color:#555555;}
+.breaking.Grey .links a:link{color:#555555;}
+.breaking.Orange{background-color:#fdeede;}
+.breaking.Orange h2{border-color:#f17900;}
+.breaking.Orange .links a:link{color:#f17900;}
