@@ -238,7 +238,6 @@ class Toist_Most_Read{
 				
 		$rows = $stats->getRows();
 		$return = array();
-		echo $rows[2][0];
 		foreach($rows as $row){
 			$page_path = explode('/',trim($row[0],'/'));
 			$page_name = $wpdb->escape(array_pop($page_path));
@@ -332,7 +331,7 @@ class Toist_Most_Read_Widget extends WP_Widget{
 			</p>
 			<p>
 				<label for="<?php echo $this->get_field_id('metric'); ?>"><?php _e('Metric:'); ?></label>
-				<input id="<?php echo $this->get_field_id('metric'); ?>" name="<?php echo $this->get_field_name('metric'); ?>" type="text" value="<?php echo $metric ?: 'ga:visits'; ?>" size="3" />
+				<input id="<?php echo $this->get_field_id('metric'); ?>" name="<?php echo $this->get_field_name('metric'); ?>" type="text" value="<?php echo $metric ?: 'ga:pageviews'; ?>" size="20" />
 			</p>
 		<?php
 	}
@@ -342,7 +341,7 @@ class Toist_Most_Read_Widget extends WP_Widget{
 		$instance['title'] = strip_tags($new_instance['title']);
 		$instance['number'] = absint( $new_instance['number'] );
 		$instance['days'] = absint( $new_instance['days'] );
-		$instance['metric'] = $new_instance['metric'] ?: 'ga:visits';
+		$instance['metric'] = $new_instance['metric'] ?: 'ga:pageviews';
 		$instance['updated'] = time();
 
 		return $instance;
@@ -351,6 +350,7 @@ class Toist_Most_Read_Widget extends WP_Widget{
 	public function widget($args,$instance){
 		global $toist_mostread,$wpdb;
 		extract($args);
+		
 		$mr = get_transient('toist_mostread'.$instance['updated']);
 		if($mr === false){
 			$posts = $toist_mostread->get_mostread($instance);
