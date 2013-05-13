@@ -11,7 +11,7 @@ Author URI: http://puppydogtales.ca
 //We're replacing the gallery shortcode so we can customize it. Let's turn this off as soon as possible
 remove_shortcode('gallery');
 add_shortcode('gallery','toist_gallery_shortcode');
-add_action('wp_ajax_toist_get_image','toist_get_image');
+add_filter('attachment_fields_to_edit','toist_gallery_image_id',10,2);
 
 function toist_gallery_shortcode($attr) {
 	$post = get_post();
@@ -37,7 +37,7 @@ function toist_gallery_shortcode($attr) {
 		if ( !$attr['orderby'] )
 			unset( $attr['orderby'] );
 	}
-
+	
 	extract(shortcode_atts(array(
 		'order'      => 'ASC',
 		'orderby'    => 'menu_order ID',
@@ -48,7 +48,8 @@ function toist_gallery_shortcode($attr) {
 		'columns'    => 3,
 		'size'       => 'thumbnail',
 		'include'    => '',
-		'exclude'    => ''
+		'exclude'    => '',
+		'feature'		 =>	''
 	), $attr));
 
 	$id = intval($id);
@@ -69,13 +70,18 @@ function toist_gallery_shortcode($attr) {
 		foreach ( $_attachments as $key => $val ) {
 			$attachments[$val->ID] = $_attachments[$key];
 		}
-		
-			//add our includes to the attachment link
-			$include_query = "?include=".$include;
-			add_filter('attachment_link',function($link,$id = false) use (&$include_query){
-				return $link.$include_query;
-			});
-		
+			
+		$include_query = "include=".$include;
+		add_filter('attachment_link',function($link,$id = false) use (&$include_query){
+			if(!strpos($link,"include=")){
+				if(strpos($link,'?')){
+					return $link.'&'.$include_query;
+				}else{
+					return $link.'?'.$include_query;
+				}
+			}else{return $link;}
+		});
+				
 	} elseif ( !empty($exclude) ) {
 		$attachments = get_children( array('post_parent' => $id, 'exclude' => $exclude, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $order, 'orderby' => $orderby) );
 	} else {
@@ -114,9 +120,6 @@ function toist_gallery_shortcode($attr) {
 				text-align: center;
 				width: {$itemwidth}%;
 			}
-			#{$selector} img {
-				border: 2px solid #cfcfcf;
-			}
 			#{$selector} .gallery-caption {
 				margin-left: 0;
 			}
@@ -126,6 +129,26 @@ function toist_gallery_shortcode($attr) {
 	$gallery_div = "<div id='$selector' class='gallery galleryid-{$id} gallery-columns-{$columns} gallery-size-{$size_class}'>";
 	$output = apply_filters( 'gallery_style', $gallery_style . "\n\t\t" . $gallery_div );
 
+	//add featured image
+	if(isset($feature) && $feature != '' && get_post_type() != 'event'){
+		$post = get_post($feature);
+				
+		if(!empty($include)){
+			$images = explode(',',$include);
+			$url = get_attachment_link($images[0]);
+		}else{
+			$url = get_attachment_link(get_post_thumbnail_id());
+		}
+				
+		$output .= sprintf('<div id="attachment_%s" class="aligncenter"><a href="%s"><img src="%s" title="%s" /></a></div>',
+			$feature,
+			$url,
+			$post->guid,
+			$post->post_name
+			);
+		
+	}
+	
 	$i = 0;
 	foreach ( $attachments as $id => $attachment ) {
 		$link = isset($attr['link']) && 'file' == $attr['link'] ? wp_get_attachment_link($id, $size, false, false) : wp_get_attachment_link($id, $size, true, false);
@@ -150,7 +173,30 @@ function toist_gallery_shortcode($attr) {
 			<br style='clear: both;' />
 		</div>\n";
 
+	//clean up the filter
+	global $wp_filter;
+	/*
+	var_dump(end($wp_filter['attachment_link']));
+	
+	$end = count($wp_filter['attachment_link']);
+	for($i = $end; $i > 0; $i--){
+		echo gettype($wp_filter['attachment_link'][$i]);
+	}
+	*/
+	unset($wp_filter['attachment_link']);
+
 	return $output;
+}
+
+function toist_gallery_image_id($form_fields,$post){
+	$form_fields['image_id'] = array(
+		'label'		=>	'Image ID',
+		'input'		=>	'text',
+		'value'		=>	$post->ID,
+		'helps'		=>	'Building a gallery? Add <code>feature="<strong>'.$post->ID.'</strong>"</code> between the square brackets and this will be the big, top image.'
+		);
+	
+	return $form_fields;
 }
 
 ?>
