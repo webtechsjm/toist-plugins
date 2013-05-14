@@ -27,6 +27,7 @@ max-width:621px;
 	background:url('http://torontoist.com/wp-content/themes/torontoist_theme20112/images/graphics/banner-arrow.png') no-repeat 12px 50% #000; display:block;
 	padding: 10px 10px 10px 60px;
 	transition:all 0.6s;
+	text-transform:uppercase;
 }
 #hub_banner:hover div{
 	text-decoration:none;
@@ -38,5 +39,5 @@ max-width:621px;
 	line-height: 1;
 	margin:5px 0;
 }
-#hub_banner p{text-transform:uppercase; margin: 0;}
-#hub_banner p.label{font-style:italic;}
+#hub_banner p{margin: 0;}
+#hub_banner p.label{font-style:italic;text-transform:none;}
