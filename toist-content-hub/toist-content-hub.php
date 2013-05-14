@@ -22,6 +22,7 @@ class Toist_Hub{
 		
 		//add_action('admin_init',array($this,'options'));
 		add_action('admin_menu',array($this,'hub_banner_page'));
+		add_action('wp_ajax_toist_banner_preview',array($this,'preview_banner'));
 	}
 	
 	function add_hub_button($context){
@@ -179,7 +180,7 @@ class Toist_Hub{
 		if($block->scroll=='true') $class[] = "scroll";
 		if(intval($block->columns) > 3 ){$class[] = "long";}			
 		else{$class []= "tall ";}
-			
+					
 		//background
 		if($block->bg){
 			$bg = sprintf(' style="background:%s" ',$block->bg);
@@ -238,6 +239,7 @@ class Toist_Hub{
 				$query['order']	= 'DESC';
 				$posts = get_posts($query);
 				//echo $posts->request;
+				var_dump($posts);
 				break;
 			case '': 
 				//alphabetical
@@ -424,6 +426,11 @@ class Toist_Hub{
 		echo json_encode($return);
 		exit;
 	}
+
+	function is_hex($string){
+		$ret = preg_match('/^#[a-fA-F0-9]{3}$|^#[a-fA-F0-9]{6}$/',$string);
+		return $ret == 1;
+	}
 	
 	function hub_banner_page(){
 		add_theme_page(
@@ -434,7 +441,128 @@ class Toist_Hub{
 			array($this,"hub_banner")
 			);
 	}
+
+	function hub_banner(){
+		//save settings
+		if(
+			isset($_POST['nonce']) 
+			&& wp_verify_nonce($_POST['nonce'],'bannerNonce')
+			){
+			$save = array();
+			if(isset($_POST['label'])) 
+				$save['label'] = filter_var($_POST['label'],FILTER_SANITIZE_STRING);
+			if(isset($_POST['headline'])) 
+				$save['headline'] = filter_var($_POST['headline'],FILTER_SANITIZE_STRING);
+			if(isset($_POST['dek'])) 
+				$save['dek'] = filter_var($_POST['dek'],FILTER_SANITIZE_STRING);
+			if(isset($_POST['link'])) 
+				$save['link'] = filter_var($_POST['link'],FILTER_SANITIZE_URL);
+			if(isset($_POST['bgcol']) && $this->is_hex($_POST['bgcol']))
+				$save['bgcol'] = filter_var($_POST['bgcol'],FILTER_SANITIZE_STRING);
+			if(isset($_POST['bgimg'])) 
+				$save['bgimg'] = filter_var($_POST['bgimg'],FILTER_SANITIZE_URL);
+			if(isset($_POST['css'])) 
+				$save['css'] = filter_var($_POST['css'],FILTER_SANITIZE_STRING);
+			$save['on'] = isset($_POST['on']) && $_POST['on'] == 'on';
+			
+			
+			update_option('hub_banner',$save);
+		}else{$save = get_option('hub_banner');}
+		
+		wp_enqueue_script('media-upload');
+		wp_enqueue_script('thickbox');
+		wp_enqueue_script('toist_banner_admin',plugins_url('banner-admin.js',__FILE__),array('jquery','media-upload','thickbox'));
+		wp_enqueue_style('thickbox');
+		wp_enqueue_style('toist_banner_admin',plugins_url('banner-admin.css',__FILE__));
+		wp_localize_script('toist_banner_admin','toistBanner',array(
+			'target'					=>	admin_url('admin-ajax.php')
+			));
+		?>
+		<div class="wrap">
+			<h2>Coverage Hub Banner</h2>
+			<div id="preview"><?php echo $this->hub_banner_render(true); ?></div>
+			<form action="" method="POST">
+				<p>
+					<label for="label">Label</label>
+					<input id="label" name="label" type="text" <?php if(isset($save['label'])) printf('value="%s"',stripslashes($save['label'])); ?> />
+				</p>
+				<p>
+					<label for="headline">Headline</label>
+					<input id="headline" name="headline" type="text" <?php if(isset($save['headline'])) printf('value="%s"',stripslashes($save['headline'])); ?> />
+				</p>
+				<p>
+					<label for="dek">Dek</label>
+					<input id="dek" name="dek" type="text" <?php if(isset($save['dek'])) printf('value="%s"',stripslashes($save['dek'])); ?> />
+				</p>
+				<p>
+					<label for="link">Link</label>
+					<input id="dek" name="link" type="text" <?php if(isset($save['link'])) printf('value="%s"',stripslashes($save['link'])); ?> />
+				</p>
+				<p>
+					<label for="background-colour">Background colour</label>
+					<input id="background-colour" name="bgcol" type="text" <?php if(isset($save['bgcol'])) printf('value="%s"',stripslashes($save['bgcol'])); ?> />
+				</p>
+				<p>
+					<label for="background-image">Background image</label>
+					<input id="background-image" name="bgimg" type="text" <?php if(isset($save['bgimg'])) printf('value="%s"',$save['bgimg']); ?> />
+					<?php //if set, allow clear; show image ?>
+				</p>
+				<p>
+					<label for="css">CSS</label>
+					<textarea name="css" id="css" ><?php if(isset($save['css'])) echo stripslashes($save['css']); ?></textarea>
+				</p>
+				<p>
+					<input type="checkbox" id="hub_banner_on" name="on" value="on" <?php
+						if($save['on']) echo 'checked="checked"';
+					
+					?> />
+					<label for="hub_banner_on">Banner active</label>
+				</p>
+				<?php wp_nonce_field('bannerNonce','nonce'); ?>
+				<input type="submit" class="button button-primary" value="Save settings" />
+			</form>
+		</div>
+		
+		<?php
+	}
 	
+	function hub_banner_render($preview = false){
+		$return = '';
+		if($preview && is_array($preview)){
+			$cfg = $preview;
+		}else{
+			$cfg = get_option('hub_banner');
+		}
+		if($preview === false && (!isset($cfg['on']) || $cfg['on'] !== true)) return false;
+		
+		$return .= sprintf('<a href="%s" id="hub_banner"><div>',
+			isset($cfg['link']) ? $cfg['link'] : '#'
+			);
+		if(isset($cfg['label'])) $return .= '<p class="label">'.stripslashes($cfg['label']).'</p>';
+		if(isset($cfg['headline'])) $return .= '<h1>'.stripslashes($cfg['headline']).'</h1>';
+		if(isset($cfg['dek'])) $return .= '<p class="dek">'.stripslashes($cfg['dek']).'</p>';
+		$return .= '</div></a>';
+		
+		$return .= '<style type="text/css">';
+		if(isset($cfg['bgcol'])) $return .= sprintf('a#hub_banner div{background-color:%s}',$cfg['bgcol']);
+		if(isset($cfg['bgimg'])) $return .= sprintf('a#hub_banner{background-image:url("%s")}',$cfg['bgimg']);
+		$return .= stripslashes($cfg['css']);
+		$return .= '</style>';
+		return $return;
+	}
+	
+	function preview_banner(){
+		$settings = $_POST['banner'];
+		$banner = $this->hub_banner_render($settings);
+		if($banner){
+			echo $banner;
+		}else{
+			//error;
+		}
+		exit;
+	}
+
+/*	
 	function hub_banner(){
 		global $pagenow;		
 		if(isset($_POST['nonce']) && wp_verify_nonce($_POST['nonce'],'hubNonce')){
@@ -485,7 +613,7 @@ class Toist_Hub{
 		
 		<?php
 	}
-	
+*/	
 	/*
 	function options(){
 	
@@ -578,17 +706,9 @@ $toist_hub = new Toist_Hub;
 add_shortcode('special_topic',array('Toist_Hub','make_blocks'));
 
 function the_hub_banner(){
-
-	if(get_option('hub_banner_on') && get_option('hub_banner_on') == true){
-		$banner = get_option('hub_banner_code');
-		$css = get_option('hub_banner_css');
-		$href = get_option('hub_banner_link');
-		
-		if($banner && $css && $href){
-		printf('<a href="%s" id="hub_banner">%s</a><style type="text/css">%s</style>',
-			stripslashes($href),stripslashes($banner),stripslashes($css)
-			);
-		}
+	global $toist_hub;
+	if($banner = $toist_hub->hub_banner_render()){
+		echo $banner;
 	}
 }
 ?>

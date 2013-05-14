@@ -115,7 +115,7 @@
 #_toist-hub .advanced label{width: 30%;}
 #_toist-hub #layout .advanced input,#layout .advanced select,#layout .advanced textarea{width: 50%;}
 #_toist-hub #layout .advanced .close{background: red; color: #fff; display:block; position:absolute; top:0;right:0; font-weight:bold; height: 20px; width: 20px; text-align:center; cursor:pointer;}
-#_toist-hub #_toist-hub footer a,#_toist-hub footer select{margin: 1% 2%;}
+#_toist-hub>.media-modal>footer a,#_toist-hub footer select{margin: 1% 2%;}
 #_toist-hub footer a.save,#_toist-hub footer .load{float:right;}
 #_toist-hub footer .message{
 	position:absolute;
