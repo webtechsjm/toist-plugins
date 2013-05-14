@@ -213,14 +213,14 @@ jQuery(document).ready(function($){
 		for(var att in defaults){opts[att] = defaults[att];}
 		for(var att in settings){opts[att] = settings[att];}
 		
-		var block = '<article class="{7} dynamic column" style="background:{6}" data-cols="{4}" data-rows="{5}" data-id="{0}"><header><h1>{1}</h1></header><div>{2}<p><label for="num_cols_{0}">Columns:</label><input id="num_cols_{0}" name="{0}-columns" class="cols" value="{4}" /><label for="num_rows_{0}">Rows:</label><input id="num_rows_{0}" name="{0}-rows" class="rows" value="{5}" /></p><p><label for="tag_{0}">Tag slug:</label><input id="tag_{0}" value="{8}" name="{0}-tag" class="tag" /></p><p><label for="cf_{0}">Custom field:</label><input id="cf_{0}" value="{9}" name="{0}-cf" class="cf" /></p></div><div><a class="remove">Remove</a> | <a class="advanced">Advanced</a></div><input name="{0}-type"  value="dropdown" type="hidden" /></article>'.format(
+		var block = '<article class="{7} dynamic column" data-cols="{4}" data-rows="{5}" data-id="{0}"><header><h1>{1}</h1></header><div>{2}<p><label for="num_cols_{0}">Columns:</label><input id="num_cols_{0}" name="{0}-columns" class="cols" value="{4}" /><label for="num_rows_{0}">Rows:</label><input id="num_rows_{0}" name="{0}-rows" class="rows" value="{5}" /></p><p><label for="tag_{0}">Tag slug:</label><input id="tag_{0}" value="{8}" name="{0}-tag" class="tag" /></p><p><label for="cf_{0}">Custom field:</label><input id="cf_{0}" value="{9}" name="{0}-cf" class="cf" /></p></div><div><a class="remove">Remove</a> | <a class="advanced">Advanced</a></div><input name="{0}-type"  value="dropdown" type="hidden" /></article>'.format(
 			'd'+$dynamics,
 			post.title,
 			'<textarea class="custom-text" name="d'+$dynamics+'-customtext">'+opts.customtext+'</textarea>',
 			'',
 			opts.columns ? opts.columns: '',
 			opts.rows ? opts.rows: '',
-			opts.bg ? opts.bg: '',
+			'',
 			'dropdown ' + opts.columns ? numbers[opts.columns] : 'twelve',
 			opts.tag ? opts.tag : '', 
 			opts.cf ? opts.cf : ''
