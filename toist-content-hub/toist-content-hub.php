@@ -449,12 +449,13 @@ class Toist_Hub{
 			&& wp_verify_nonce($_POST['nonce'],'bannerNonce')
 			){
 			$save = array();
+			$formatting = '<em><strong>';
 			if(isset($_POST['label'])) 
-				$save['label'] = filter_var($_POST['label'],FILTER_SANITIZE_STRING);
+				$save['label'] = strip_tags($_POST['label'],$formatting);
 			if(isset($_POST['headline'])) 
-				$save['headline'] = filter_var($_POST['headline'],FILTER_SANITIZE_STRING);
+				$save['headline'] = strip_tags($_POST['headline'],$formatting);
 			if(isset($_POST['dek'])) 
-				$save['dek'] = filter_var($_POST['dek'],FILTER_SANITIZE_STRING);
+				$save['dek'] = strip_tags($_POST['dek'],$formatting);
 			if(isset($_POST['link'])) 
 				$save['link'] = filter_var($_POST['link'],FILTER_SANITIZE_URL);
 			if(isset($_POST['bgcol']) && $this->is_hex($_POST['bgcol']))
