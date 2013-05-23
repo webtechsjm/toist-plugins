@@ -36,6 +36,7 @@ class PDT_Days_To extends WP_Widget {
 			|| (!$instance['since'] && $diff->invert && $diff->days) 
 			):
 		?>
+		<hr />
 		<section id="counter">
 			<hgroup>
 				<?php 
