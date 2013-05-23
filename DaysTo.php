@@ -45,7 +45,7 @@ class PDT_Days_To extends WP_Widget {
 			</hgroup>
 			<div class="days"><?php echo $diff->format($instance['date_format']) ?></div>
 			<?php if ($instance['link_url'] && $instance['link_text']): ?>
-			<p class="link"><a href="<?php echo $instance['link_url']; ?>"><img src="images/graphics/_.gif" class="sprite" /><?php echo $instance['link_text']; ?></a></p>
+			<p class="link"><a href="<?php echo $instance['link_url']; ?>"><img src="<?php echo bloginfo('stylesheet_directory'); ?>/images/graphics/_.gif" class="sprite" /><?php echo $instance['link_text']; ?></a></p>
 			<?php endif; ?>
 	</section>
 	<?php
