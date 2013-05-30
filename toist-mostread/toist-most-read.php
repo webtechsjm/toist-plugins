@@ -381,7 +381,7 @@ class Toist_Most_Read_Widget extends WP_Widget{
 		add_filter('excerpt_length',array($this,"excerpt_length"));
 		while($mr->have_posts()): $mr->the_post();?>
 		<article>
-			<h1><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h1>
+			<h1><a href="<?php the_permalink(); ?>" rel="nofollow"><?php the_title(); ?></a></h1>
 			<aside><?php echo $count; ?></aside>
 			<div><?php the_excerpt(); ?></div>
 		</article>

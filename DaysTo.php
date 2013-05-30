@@ -22,7 +22,7 @@ class PDT_Days_To extends WP_Widget {
 	}
 
 	function widget( $args, $instance ) {
-
+ 		extract($args, EXTR_SKIP);
 		echo $before_widget;
 		
 		$title = apply_filters('widget_title',$instance['title']);

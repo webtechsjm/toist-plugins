@@ -36,8 +36,7 @@ class Toist_Editors_Picks extends WP_Widget {
 			$q = new WP_Query(array(
 				'post_type'	=> 'any',
 				'posts_per_page'	=>	$instance['number'],
-				'tag'	=>	'editors-pick',
-				/*
+				//'tag'	=>	'editors-pick',
 				'tax_query'	=>	array(
 					'relation'		=>	'OR',
 					array(
@@ -54,7 +53,6 @@ class Toist_Editors_Picks extends WP_Widget {
 					)
 				),
 				'suppress_filters'	=>	'true'
-				*/
 			));
 			//add_filter('pre_get_posts','noindex_remover');
 			$wp_filter['pre_get_posts'] = $filters;
@@ -78,7 +76,7 @@ class Toist_Editors_Picks extends WP_Widget {
 			if ( $count&1 ) { echo "<tr>"; } ?>
 				<td>
 					<?php edit_post_link('[Edit]','',' '); ?>   
-					<a href="<?php the_permalink(); ?>" class="title">
+					<a href="<?php the_permalink(); ?>" class="title" rel="nofollow">
 					<?php if ($post_alt_title = get_post_meta($post->ID, 'alt_title', true)) {
 						echo $post_alt_title;
 						}
@@ -88,7 +86,7 @@ class Toist_Editors_Picks extends WP_Widget {
 					?>
 					</a>
 					<?php if (($count+$rowcount)&1) : ?>
-						<a href="<?php the_permalink() ?>" class="image">
+						<a href="<?php the_permalink() ?>" class="image" rel="nofollow">
 							<?php if ($post_alt_image = get_post_meta($post->ID, 'alt_image', true)) {
 								echo $post_alt_image;
 								}
@@ -98,7 +96,7 @@ class Toist_Editors_Picks extends WP_Widget {
 									?>
 						</a>
 					<? else: ?>
-						<a href="<?php the_permalink(); ?>" class="dek">
+						<a href="<?php the_permalink(); ?>" class="dek" rel="nofollow">
 							<?php if ($post_alt_dek = get_post_meta($post->ID, 'alt_dek', true)) {
 								echo $post_alt_dek;
 								} 

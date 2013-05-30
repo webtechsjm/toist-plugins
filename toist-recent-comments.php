@@ -85,7 +85,7 @@ class Toist_Recent_Comments extends WP_Widget {
 						.'&hellip; <a class="more-link" href="'.$comment_link.'">Keep reading</a>';
 				}else{$content = $comment->comment_content;}
 				
-				$output .=  '<li class="comment">' . /* translators: comments widget: 1: comment author, 2: post link */ sprintf(_x('%1$s on %2$s', 'widgets'), get_comment_author(), '<a href="' . $comment_link . '">' . get_the_title($comment->comment_post_ID) . '</a>') .'<blockquote>'.$content.'</blockquote>'.'</li>';
+				$output .=  '<li class="comment">' . /* translators: comments widget: 1: comment author, 2: post link */ sprintf(_x('%1$s on %2$s', 'widgets'), get_comment_author(), '<a href="' . $comment_link . '" rel="nofollow">' . get_the_title($comment->comment_post_ID) . '</a>') .'<blockquote>'.$content.'</blockquote>'.'</li>';
 			}
  		}
 		$output .= '</ul>';
@@ -134,6 +134,7 @@ class Toist_Most_Commented extends WP_Widget{
 				'description'	=>	__('Shows the most commented','toistmostread')
 			)
 		);
+		/* REMOVE ME
 		$this->timespans = array(
 			86400		=>	'Past day',
 			604800	=>	'Past week',
@@ -141,6 +142,7 @@ class Toist_Most_Commented extends WP_Widget{
 			7776000	=>	'Past 90 days',
 			31557600=>	'Past year'
 		);
+		*/
 	}
 	public function form($instance){
 		if(isset($instance['title'])){
@@ -224,7 +226,7 @@ class Toist_Most_Commented extends WP_Widget{
 		<?php
 		while($discussed->have_posts()): $discussed->the_post(); ?>
 			<article>
-				<a href="<?php the_permalink(); ?>">
+				<a href="<?php the_permalink(); ?>" rel="nofollow">
 					<p>
 						<?php if(isset($post_comments) && is_array($post_comments)){ ?>
 						<span class="comments"><?php echo $post_comments[get_the_ID()]; ?></span>

@@ -12,6 +12,8 @@ Author URI: http://puppydogtales.ca
 remove_shortcode('gallery');
 add_shortcode('gallery','toist_gallery_shortcode');
 add_filter('attachment_fields_to_edit','toist_gallery_image_id',10,2);
+add_action('publish_post', 'toist_gallery_apt');
+add_action('transition_post_status', 'toist_gallery_post_transition');
 
 function toist_gallery_shortcode($attr) {
 	$post = get_post();
@@ -197,6 +199,47 @@ function toist_gallery_image_id($form_fields,$post){
 		);
 	
 	return $form_fields;
+}
+
+function toist_gallery_apt($post_id){
+	global $wpdb;
+	if (get_post_meta($post_id, '_thumbnail_id', true) || get_post_meta($post_id, 'skip_post_thumb', true)) {
+        return;
+    }
+
+  $post = $wpdb->get_results("SELECT * FROM {$wpdb->posts} WHERE id = $post_id");
+
+  // Initialize variable used to store list of matched images as per provided regular expression
+  $thumb_id = false;
+  
+  $pattern = '|\[gallery.*feature="(.+)".*\]|';
+	preg_match_all($pattern,$post[0]->post_content,$matches);
+	
+	if(count($matches)){
+		foreach($matches[1] as $match){
+			if(!$feature_id && intval($match) == $match){
+				update_post_meta( $post_id, '_thumbnail_id', $match );
+				break;
+			}
+		}
+	}
+	
+	if(!$thumb_id && preg_match_all('|\[gallery.*id="(.+)".*\]|',$post[0]->post_content,$matches)){
+		foreach($matches[1] as $match){
+			if(!$feature_id && intval($match) == $match){
+				update_post_meta( $post_id, '_thumbnail_id', $match );
+				break;
+			}
+		}
+	}
+}
+
+function toist_gallery_post_transition($new_status='', $old_status='', $post=''){
+	global $post_ID;
+	
+	if ('publish' == $new_status) {
+        toist_gallery_apt($post_ID);
+    }
 }
 
 ?>
