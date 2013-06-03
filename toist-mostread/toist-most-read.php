@@ -373,7 +373,6 @@ class Toist_Most_Read_Widget extends WP_Widget{
 			));
 		
 			set_transient('toist_mostread',$mr,15*MINUTE_IN_SECONDS);
-			$ids = array(248587,246404,246379,246373);
 			foreach($ids as $id){
 				$meta[$id] = get_post_meta($id);
 			}
@@ -396,8 +395,9 @@ class Toist_Most_Read_Widget extends WP_Widget{
 			<aside><?php echo $count; ?></aside>
 			<div><?php 
 			$id = get_the_ID();
-			if($meta[$id]['alt_dek']){echo '<p>'.$meta[$id]['alt_dek'][0].'</p>';
-			}elseif($meta[$id]['dek']){echo '<p>'.$meta[$id]['dek'][0].'</p>';
+			if(!isset($meta[$id])){the_excerpt();
+			}elseif(isset($meta[$id]['alt_dek'])){echo '<p>'.$meta[$id]['alt_dek'][0].'</p>';
+			}elseif(isset($meta[$id]['dek'])){echo '<p>'.$meta[$id]['dek'][0].'</p>';
 			}else{the_excerpt();} 			
 			?></div>
 		</article>
