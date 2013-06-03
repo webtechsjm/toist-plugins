@@ -379,7 +379,7 @@ class Toist_Most_Read_Widget extends WP_Widget{
 			}
 			$meta['updated'] = $instance['updated'];
 			
-			//set_transient('toist_mostread_meta',$mr,15*MINUTE_IN_SECONDS);
+			set_transient('toist_mostread_meta',$mr,15*MINUTE_IN_SECONDS);
 		}
 		
 		if($mr->have_posts()):
