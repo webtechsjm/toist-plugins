@@ -351,7 +351,17 @@ class Toist_Most_Read_Widget extends WP_Widget{
 		global $toist_mostread,$wpdb;
 		extract($args);
 		
-		$mr = get_transient('toist_mostread'.$instance['updated']);
+		$mr = get_transient('toist_mostread');
+		$meta = get_transient('toist_mostread_meta');
+		if(
+			$meta === false 
+			|| !is_array($meta)
+			|| !isset($meta['updated'])
+			|| $meta['updated'] != $instance['updated']
+		){
+			$meta = array();			
+			$mr = false;
+		}
 		if($mr === false){
 			$posts = $toist_mostread->get_mostread($instance);
 			$stmt = sprintf(
@@ -368,7 +378,13 @@ class Toist_Most_Read_Widget extends WP_Widget{
 				'posts_per_page'	=>	$instance['number']
 			));
 		
-			set_transient('toist_mostread'.$instance['updated'],$mr,15*MINUTE_IN_SECONDS);
+			set_transient('toist_mostread',$mr,15*MINUTE_IN_SECONDS);
+			if(is_array($ids)) foreach($ids as $id){
+				$meta[$id] = get_post_meta($id);
+			}
+			$meta['updated'] = $instance['updated'];
+			
+			set_transient('toist_mostread_meta',$meta,15*MINUTE_IN_SECONDS);
 		}
 		
 		if($mr->have_posts()):
@@ -383,7 +399,13 @@ class Toist_Most_Read_Widget extends WP_Widget{
 		<article>
 			<h1><a href="<?php the_permalink(); ?>" rel="nofollow"><?php the_title(); ?></a></h1>
 			<aside><?php echo $count; ?></aside>
-			<div><?php the_excerpt(); ?></div>
+			<div><?php 
+			$id = get_the_ID();
+			if(!$meta || !isset($meta[$id])){the_excerpt();
+			}elseif(isset($meta[$id]['alt_dek'])){echo '<p>'.$meta[$id]['alt_dek'][0].'</p>';
+			}elseif(isset($meta[$id]['dek'])){echo '<p>'.$meta[$id]['dek'][0].'</p>';
+			}else{the_excerpt();} 			
+			?></div>
 		</article>
 		<?php	
 		$count++;
