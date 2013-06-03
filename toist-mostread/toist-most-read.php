@@ -353,7 +353,13 @@ class Toist_Most_Read_Widget extends WP_Widget{
 		
 		$mr = get_transient('toist_mostread');
 		$meta = get_transient('toist_mostread_meta');
-		if($meta === false || $meta['updated'] != $instance['updated']){
+		if(
+			$meta === false 
+			|| !is_array($meta)
+			|| !isset($meta['updated'])
+			|| $meta['updated'] != $instance['updated']
+		){
+			$meta = array();			
 			$mr = false;
 		}
 		if($mr === false){
@@ -373,12 +379,12 @@ class Toist_Most_Read_Widget extends WP_Widget{
 			));
 		
 			set_transient('toist_mostread',$mr,15*MINUTE_IN_SECONDS);
-			foreach($ids as $id){
+			if(is_array($ids)) foreach($ids as $id){
 				$meta[$id] = get_post_meta($id);
 			}
 			$meta['updated'] = $instance['updated'];
 			
-			set_transient('toist_mostread_meta',$mr,15*MINUTE_IN_SECONDS);
+			set_transient('toist_mostread_meta',$meta,15*MINUTE_IN_SECONDS);
 		}
 		
 		if($mr->have_posts()):
@@ -395,7 +401,7 @@ class Toist_Most_Read_Widget extends WP_Widget{
 			<aside><?php echo $count; ?></aside>
 			<div><?php 
 			$id = get_the_ID();
-			if(!isset($meta[$id])){the_excerpt();
+			if(!$meta || !isset($meta[$id])){the_excerpt();
 			}elseif(isset($meta[$id]['alt_dek'])){echo '<p>'.$meta[$id]['alt_dek'][0].'</p>';
 			}elseif(isset($meta[$id]['dek'])){echo '<p>'.$meta[$id]['dek'][0].'</p>';
 			}else{the_excerpt();} 			
