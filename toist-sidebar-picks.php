@@ -27,24 +27,21 @@ class Toist_Editors_Picks extends WP_Widget {
 		
 		//check if we have this cached
 		$picks = get_transient('toist-editors-picks');
-		$picks = false;
 		if($picks === false){
 			//remove_filter('pre_get_posts','noindex_remover');
 			global $wp_filter;
 			$filters = $wp_filter['pre_get_posts'];
 			$wp_filter['pre_get_posts'] = array();
-			$q = new WP_Query(array(
-				'post_type'	=> 'any',
+			$posts = new WP_Query(array(
+				'post_type'	=> 'post',
 				'posts_per_page'	=>	$instance['number'],
-				//'tag'	=>	'editors-pick',
+				'tag'	=>	'editors-pick',
+				'suppress_filters'	=>	'true'
+			));
+			$events = new WP_Query(array(
+				'post_type'	=> 'event',
+				'posts_per_page'	=>	$instance['number'],
 				'tax_query'	=>	array(
-					'relation'		=>	'OR',
-					array(
-						'taxonomy'	=>	'post_tag',
-						'field'			=>	'slug',
-						'terms'			=>	'editors-pick',
-						'include_children'	=>	false
-					),
 					array(
 						'taxonomy'	=>	'event-tag',
 						'field'			=>	'slug',
@@ -54,9 +51,10 @@ class Toist_Editors_Picks extends WP_Widget {
 				),
 				'suppress_filters'	=>	'true'
 			));
-			//add_filter('pre_get_posts','noindex_remover');
+			
+			$picks = array_merge($posts->posts,$events->posts);
+			array_multisort($picks,SORT_DESC);
 			$wp_filter['pre_get_posts'] = $filters;
-			$picks = $q->posts;
 			set_transient('toist-editors-picks',$picks,15 * MINUTE_IN_SECONDS);
 		}
 				
@@ -109,6 +107,7 @@ class Toist_Editors_Picks extends WP_Widget {
 				</td>
       <?php $count ++; 
 		  if ( $count&1 ) { echo "</tr>"; $rowcount ++;}
+		  if($count > $instance['number']) break;
 		endforeach; ?>
 		</table>
 	</section>
