@@ -1,0 +1,12 @@
+# English (US) translation for Event Organiser Payment.
+# Copyright (C) 2013 Senning Luk.
+# This file is distributed under the same license as the Event Organiser Payment package.
+# Senning Luk <senning@puppydogtales.ca>, 2013
+#
+#, fuzzy
+
+msgid "Transaction refunded. A fee of $%s was charged."
+msgstr ""
+
+msgid "Payment through PayPal when you submit for review."
+msgstr "PayPal"
