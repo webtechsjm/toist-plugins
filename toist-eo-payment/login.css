@@ -1,0 +1,16 @@
+.welcome{
+	font-style: italic;
+	margin: 0 0 1em 10px;
+	padding: 5px;
+}
+
+.login h1 a{
+	background:url('http://torontoist.com/wp-content/themes/torontoist_theme20112/images/torontoist-logos/primary/rotate.php');
+	width: 540px;
+	height: 90px;
+	margin-left: -104px;
+}
+
+body.login{
+	background: #fff;
+}
