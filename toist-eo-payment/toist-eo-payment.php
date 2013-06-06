@@ -304,7 +304,8 @@ class toist_eo_payment{
 		$success = preg_replace($pattern,$success_msg,$location);
 		$cancel = preg_replace($pattern,$cancel_msg,$location)."&status=cancel";
 		
-		$environment = 'sandbox';
+		//$environment = 'sandbox';
+		$environment = false;
 		$itemAmount = $this->get_cost();
 		$taxAmount = number_format($itemAmount * 0.13,2);
 		$paymentAmount = $itemAmount + $taxAmount;
@@ -334,14 +335,13 @@ class toist_eo_payment{
 		if("SUCCESS" == strtoupper($res['ACK']) || "SUCCESSWITHWARNING" == strtoupper($res['ACK'])){
 			$token = urldecode($res['TOKEN']);
 			$redirect = "https://www.paypal.com/webscr&cmd=_express-checkout&token=$token&useraction=commit";
+			//save variables we'll need for the confirmation
+			$_SESSION['paymentType'] = $paymentType;
+			$_SESSION['paymentAmount'] = $paymentAmount;
+			$_SESSION['currency'] = $currencyID;
 			
 			if("sandbox" === $environment || "beta-sandbox" === $environment) {
 				$redirect = "https://www.$environment.paypal.com/webscr&cmd=_express-checkout&token=$token";
-
-				//save variables we'll need for the confirmation
-				$_SESSION['paymentType'] = $paymentType;
-				$_SESSION['paymentAmount'] = $paymentAmount;
-				$_SESSION['currency'] = $currencyID;
 				}
 		}else{
 			$redirect .="&payment=redirect-failed";
@@ -960,7 +960,7 @@ class toist_eo_payment{
 	private function paypal_post($method,$nvp){
 		require('/var/www/to-config/toist-eo-credentials.php');
 		$encrypt = mcrypt_module_open('rijndael-256','','ofb','');
-		$init_vector = stripslashes(base64_decode(SJM_ENCRYPT_IV));
+		$init_vector = base64_decode(stripslashes(SJM_ENCRYPT_IV));
 		$key_size = mcrypt_enc_get_key_size($encrypt);
 
 		//create key
@@ -968,21 +968,25 @@ class toist_eo_payment{
 		//initialize encryption
 		mcrypt_generic_init($encrypt,$key,$init_vector);
 
-		$paypal_user = mdecrypt_generic($encrypt,stripslashes(base64_decode(SJM_PAYPAL_USER)));
-		$paypal_pass = mdecrypt_generic($encrypt,stripslashes(base64_decode(SJM_PAYPAL_PASS)));
-		$paypal_sig = mdecrypt_generic($encrypt,stripslashes(base64_decode(SJM_PAYPAL_SIG)));
+		$paypal_user = mdecrypt_generic($encrypt,base64_decode(stripslashes(SJM_PAYPAL_USER)));
+		$paypal_pass = mdecrypt_generic($encrypt,base64_decode(stripslashes(SJM_PAYPAL_PASS)));
+		$paypal_sig = mdecrypt_generic($encrypt,base64_decode(stripslashes(SJM_PAYPAL_SIG)));
 
 		mcrypt_generic_deinit($encrypt);
 		mcrypt_module_close($encrypt);
 
-		$API_UserName = urlencode($paypal_user);
-		$API_Password = urlencode($paypal_pass);
-		$API_Signature = urlencode($paypal_sig);
+		//switch to production
+		$paypal_test = 'false';
+
 		if($paypal_test == 'false'){
 			$API_Endpoint = "https://api-3t.paypal.com/nvp";
 		}else{
 			$API_Endpoint = "https://api-3t.sandbox.paypal.com/nvp";
 		}
+
+		$API_UserName = urlencode($paypal_user);
+		$API_Password = urlencode($paypal_pass);
+		$API_Signature = urlencode($paypal_sig);
 
 		$version = urlencode('63.0');
 	 
@@ -1003,12 +1007,7 @@ class toist_eo_payment{
 	 
 		// Set the request as a POST FIELD for curl.
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $nvpreq);
-	 
-	 $log = fopen(__DIR__."/log.txt","a");
-		fwrite($log,"\n\n ----- paypal_post ----- \n");
-		fwrite($log,"NVP: ".$nvpreq);
-		fclose($log);
-	 
+	 	 
 		// Get response from the server.
 		$httpResponse = curl_exec($ch);
 	 
@@ -1026,7 +1025,7 @@ class toist_eo_payment{
 				$httpParsedResponseAr[$tmpAr[0]] = $tmpAr[1];
 			}
 		}
-	 
+			 
 		if((0 == sizeof($httpParsedResponseAr)) || !array_key_exists('ACK', $httpParsedResponseAr)) {
 			exit("Invalid HTTP Response for POST request($nvpreq) to $API_Endpoint.");
 		}

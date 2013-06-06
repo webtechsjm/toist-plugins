@@ -17,7 +17,7 @@
 		
 		
 		$enc = array(
-			"SJM_ENCRYPT_IV"		=>	$init_vector,	
+			"SJM_ENCRYPT_IV"		=>	addslashes(base64_encode($init_vector)),
 			"SJM_PAYPAL_USER"		=>	addslashes(base64_encode(mcrypt_generic($encrypt,$pp_user))),
 			"SJM_PAYPAL_PASS"		=>	addslashes(base64_encode(mcrypt_generic($encrypt,$pp_pass))),
 			"SJM_PAYPAL_SIG"		=>	addslashes(base64_encode(mcrypt_generic($encrypt,$pp_sig)))
@@ -48,9 +48,9 @@
 				);
 		endforeach;
 		*/
-		echo "<br />Username: ".mdecrypt_generic($encrypt,stripslashes(base64_decode($enc['SJM_PAYPAL_USER'])));
-		echo "<br />Password: ".mdecrypt_generic($encrypt,stripslashes(base64_decode($enc['SJM_PAYPAL_PASS'])));
-		echo "<br />Signature: ".mdecrypt_generic($encrypt,stripslashes(base64_decode($enc['SJM_PAYPAL_SIG'])));
+		echo "<br />Username: ".mdecrypt_generic($encrypt,base64_decode(stripslashes($enc['SJM_PAYPAL_USER'])));
+		echo "<br />Password: ".mdecrypt_generic($encrypt,base64_decode(stripslashes($enc['SJM_PAYPAL_PASS'])));
+		echo "<br />Signature: ".mdecrypt_generic($encrypt,base64_decode(stripslashes($enc['SJM_PAYPAL_SIG'])));
 				
 		mcrypt_generic_deinit($encrypt);
 		mcrypt_module_close($encrypt);
