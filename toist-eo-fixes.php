@@ -28,6 +28,7 @@ add_filter('query_vars', 'toist_eo_hybrid_query_vars' );
 function toist_eo_hybrid_archive_pre_get_posts($query){
 	if(!empty($query->query_vars['reviews'])){
 		$query->set('meta_key','_include_in_feed');
+		$query->set('meta_value','true');
 		$query->set('event_end_after','today');
 	}
 }
