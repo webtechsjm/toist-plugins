@@ -170,7 +170,7 @@ jQuery(document).ready(function($){
 		for(var att in settings){opts[att] = settings[att];}
 		$used[post.id] = post;
 	
-		var block = '<article class="{7} column" data-cols="{4}" data-rows="{5}" data-id="{0}"><header>{3}<h1>{1}</h1></header><div>{2}<p><label for="num_cols_{0}">Columns:</label><input id="num_cols_{0}" name="{0}-columns" class="cols" value="{4}" /><label for="num_rows_{0}">Rows:</label><input id="num_rows_{0}" name="{0}-rows" class="rows" value="{5}" /></p><p><label for="ids_{0}">Post IDs:</label><input id="ids_{0}" value="{6}" name="{0}-ids" class="ids" /></p></div><div><a class="remove">Remove</a> | <a class="advanced">Advanced</a></div></article>'.format(
+		var block = '<article class="{7} column" data-cols="{4}" data-rows="{5}" data-id="{0}"><header>{3}<h1>{1}</h1></header><div>{2}<p><label for="num_cols_{0}">Columns:</label><input id="num_cols_{0}" name="{0}-columns" class="cols" value="{4}" /><label for="num_rows_{0}">Rows:</label><input id="num_rows_{0}" name="{0}-rows" class="rows" value="{5}" /></p><p><label for="ids_{0}">Post IDs:</label><input id="ids_{0}" value="{6}" name="{0}-ids" class="ids" /></p><p><label for="classes_{0}">Classes:</label><input id="classes_{0}" value="{8}" name="{0}-classes" class="classes" /></p></div><div><a class="remove">Remove</a> | <a class="advanced">Advanced</a></div></article>'.format(
 			post.id,
 			post.title,
 			(opts.text =='custom') ? '<textarea class="custom-text" name="'+post.id+'-customtext">'+opts.customtext+'</textarea>' : '<p>'+post.content+'</p>',
@@ -178,7 +178,8 @@ jQuery(document).ready(function($){
 			opts.columns ? opts.columns: '',
 			opts.rows ? opts.rows: '',
 			opts.ids ? opts.ids: post.id,
-			opts.columns ? numbers[opts.columns] : 'twelve'
+			opts.columns ? numbers[opts.columns] : 'twelve',
+			opts.classes ? opts.classes : ''
 		);
 		//$layout_pane.append(block);
 		//console.log(opts.text);
@@ -188,8 +189,8 @@ jQuery(document).ready(function($){
 			{name:'alt_title',value:'Alt Title'}],
 			opts.title ? opts.title : '');
 		var text_opt = '<label>Body text</label>'+select_builder(post.id,'text',
-			[{name:'content',value:'Body text'},
-			{name:'dek',value:'Dek'},
+			[{name:'dek',value:'Dek'},
+			{name:'content',value:'Body text'},
 			{name:'alt_dek',value:'Alt Dek'},
 			{name:'custom',value:'Custom'}],
 			opts.text ? opts.text : '');
