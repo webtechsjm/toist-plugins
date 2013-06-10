@@ -138,20 +138,59 @@ class Toist_Hub{
 		if(!isset($block->type)){return self::make_post_block($block,$post,$format);
 		}else{
 			switch($block->type){
-				case "dropdown": return self::make_dropdown_block($block,$format);
+				case "dropdown": return self::make_dropdown_block($block,$post,$format);
 				default: return self::make_post_block($block,$post,$format); break;
 			}
 		}
 	}
 			
 	function make_post_block($block,$post,$format){
-		$block_format = '<article class="%1$s"%5$s>%6$s<h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%4$s</div>%7$s</article>';
+		$layout = false;
 		$numbers = array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve");
-			
+		$img_size = 'medium';
+		$columns_num = intval($block->columns);
+		
+		if(isset($block->classes)){
+			$classes = explode(' ',$block->classes);
+		}else{$classes = array();}
+		
+		if(in_array('wide',$classes)){
+			$layout = 'top';
+		} elseif(in_array('tall',$classes)){
+			if(in_array('top',$classes)) $layout = 'top';
+			else $layout = 'bottom';
+			$img_size = 'large';
+		} elseif($columns_num > 3){
+			$classes[] = 'wide';
+		}else{
+			$classes[] = 'tall';
+		}
+		
+		if($format == 'sub' && $columns_num < 5){
+			$img_size = 'thumbnail';
+		}
+		if(
+			in_array('tall',$classes) 
+			&& $columns_num < 4
+			&& !in_array('notstrict',$classes) 
+			&& !in_array('strict',$classes)
+		){
+			$classes[] = 'strict';
+		}
+		if(
+			in_array('wide',$classes) 
+			&& $columns_num > 4
+			&& !in_array('notexpanded',$classes) 
+			&& !in_array('expanded',$classes)
+		){
+			$classes[] = 'expanded';
+		}
+		
+		
 		//title
 		if($block->title == 'alt_title'){$title = $post['alt_title'];
 		}else{$title = $post['title'];}
-			
+					
 		//text
 		switch($block->text){
 			case "dek": $content = $post['dek']; break;
@@ -164,7 +203,7 @@ class Toist_Hub{
 		if(isset($block->hideImg) && $block->hideImg == 'true'){
 			$thumbnail = '';
 		}else{
-			$thumbnail = get_the_post_thumbnail($block->ids,'medium');
+			$thumbnail = get_the_post_thumbnail($post['id'],$img_size);
 			if($thumbnail == ''){
 				preg_match('|<img[^>]+>|',$post['content'],$matches);
 				if(is_array($matches)) $thumbnail = $matches[0];
@@ -174,22 +213,31 @@ class Toist_Hub{
 		
 		//class
 			//If admins can add arbitrary classes, explode on spaces and merge with this array
-		$class = array();
-		if($block->columns && $format == 'block') $class[] = $numbers[$block->columns]." columns";
-		if($block->rows) $class[] = "r".$block->rows." rows";
-		if($block->scroll=='true') $class[] = "scroll";
-		if(intval($block->columns) > 3 ){$class[] = "long";}			
-		else{$class []= "tall ";}
+		if($block->columns && $format == 'block') $classes[] = $numbers[$block->columns]." columns";
+		if($block->rows) $classes[] = "r".$block->rows." rows";
+		if($block->scroll=='true') $classes[] = "scroll";
 					
 		//background
 		if($block->bg){
 			$bg = sprintf(' style="background:%s" ',$block->bg);
-			$class[] = "has_bg";
+			$classes[] = "has_bg";
 		}else{$bg='';}
 		
+		
+		switch($layout){
+			case 'top':
+				$block_format = '<article class="%1$s"%5$s>%6$s%7$s<h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%4$s</div></article>';
+				break;
+			case 'bottom':
+				$block_format = '<article class="%1$s"%5$s><h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%4$s</div>%6$s%7$s</article>';
+				break;
+			default: 
+				$block_format = '<article class="%1$s"%5$s>%6$s<h1><a href="%2$s">%3$s</a></h1><div class="excerpt">%4$s</div>%7$s</article>'; 
+				break;
+		}
 		//format
 		return sprintf($block_format,							//format
-			join(' ',$class),												//1. class
+			join(' ',$classes),												//1. class
 			$post['permalink'],											//2. permalink
 			$title,																	//3. title
 			strip_shortcodes($content),							//4. content
@@ -337,6 +385,7 @@ class Toist_Hub{
 		
 			foreach($posts->posts as $post){
 				$post_list[$post->ID] = array(
+					'id'				=>	$post->ID,
 					'author'		=>	$post->post_author,
 					'title'			=>	$post->post_title,
 					'content'		=>	$post->post_content,
@@ -369,8 +418,6 @@ class Toist_Hub{
 					$class[] = $numbers[$block->columns]." columns";
 					if($block->rows) $class[] = "r".$block->rows." rows";
 					if($block->scroll=='true') $class[] = "scroll";
-					if(intval($block->columns) > 3 ){$class[] = "long";}			
-					else{$class []= "tall ";}
 					
 					$subblock = '';
 					foreach($ids as $id){
@@ -562,68 +609,6 @@ class Toist_Hub{
 		}
 		exit;
 	}
-
-/*	
-	function hub_banner(){
-		global $pagenow;		
-		if(isset($_POST['nonce']) && wp_verify_nonce($_POST['nonce'],'hubNonce')){
-			if(isset($_POST['hub_banner_on'])){
-				update_option('hub_banner_on',true);
-			}else{
-			update_option('hub_banner_on',false);
-			}
-			if(isset($_POST['hub_banner_code'])){
-				update_option('hub_banner_code',$_POST['hub_banner_code']);
-			}
-			if(isset($_POST['hub_banner_link'])){
-				update_option('hub_banner_link',$_POST['hub_banner_link']);
-			}
-			if(isset($_POST['hub_banner_css'])){
-				update_option('hub_banner_css',$_POST['hub_banner_css']);
-			}
-		}
-		
-		?>
-		<div class="wrap">
-			<?php screen_icon('options-general'); ?>
-			<h2>Coverage Hub Banner</h2>
-			<form action="" method="POST">
-				<p>
-					<label for="hub_banner_code">HTML</label>
-					<textarea name="hub_banner_code" id="hub_banner_code" style="display:block;width:500px"><?php echo stripslashes(get_option('hub_banner_code')); ?></textarea>
-				</p>
-				<p>
-					<label for="hub_banner_css">CSS</label>
-					<textarea name="hub_banner_css" id="hub_banner_css" style="display:block;width:500px"><?php echo stripslashes(get_option('hub_banner_css')); ?></textarea>
-				</p>
-				<p>
-					<label for="hub_banner_link">Link</label>
-					<input type="" name="hub_banner_link" id="hub_banner_link" value="<?php echo stripslashes(get_option('hub_banner_link')); ?>" />
-				</p>
-				<p>
-					<input type="checkbox" id="hub_banner_on" name="hub_banner_on" value="on" <?php
-						if(get_option('hub_banner_on')) echo 'checked="checked"';
-					
-					?> />
-					<label for="hub_banner_on">Banner active</label>
-				</p>
-				<?php wp_nonce_field('hubNonce','nonce'); ?>
-				<input type="submit" class="button button-primary" value="Save settings" />
-			</form>
-		</div>
-		
-		<?php
-	}
-*/	
-	/*
-	function options(){
-	
-	}
-	
-	function generic_form(){
-	
-	}
-	*/
 	
 	function ajax_validate(){
 		if(

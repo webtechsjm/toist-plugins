@@ -101,7 +101,7 @@
 #_toist-hub #layout .one.column p{
 	max-height: 4.8em;
 	}
-#_toist-hub #layout .ids{width: 60%; text-align:left;}
+#_toist-hub #layout .ids,#_toist-hub #layout .classes{width: 60%; text-align:left;}
 #_toist-hub #layout div.advanced{
 	position:absolute;
 	top: 7%; left: 7%;
