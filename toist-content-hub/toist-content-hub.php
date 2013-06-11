@@ -574,12 +574,13 @@ class Toist_Hub{
 		<?php
 	}
 	
-	function hub_banner_render($preview = false){
+	function hub_banner_render($preview = false,$show_override = false){
 		$return = '';
 		if($preview && is_array($preview)){
 			$cfg = $preview;
 		}else{
 			$cfg = get_option('hub_banner');
+			if($show_override) $cfg['on'] = true;
 		}
 		if($preview === false && (!isset($cfg['on']) || $cfg['on'] !== true)) return false;
 		
@@ -691,9 +692,9 @@ $toist_hub = new Toist_Hub;
 
 add_shortcode('special_topic',array('Toist_Hub','make_blocks'));
 
-function the_hub_banner(){
+function the_hub_banner($show_override){
 	global $toist_hub;
-	if($banner = $toist_hub->hub_banner_render()){
+	if($banner = $toist_hub->hub_banner_render(false,$show_override)){
 		echo $banner;
 	}
 }
