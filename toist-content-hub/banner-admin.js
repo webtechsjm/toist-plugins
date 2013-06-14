@@ -15,7 +15,7 @@ jQuery(document).ready(function($){
 			});
 			data = {
 				banner:banner,
-				action: 'toist_banner_preview'
+				action: 'page_banner_preview'
 				};
 			
 			$.post(

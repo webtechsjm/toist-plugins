@@ -14,9 +14,11 @@ License: GPLv2 or later
 class Toist_Banners{
 	//We can lazily generalize this by just reinstantiating this every time we need a new banner.
 	//Accept a label, apply it to admin setup
-	function __construct(){	
+	function __construct($name = ''){	
 		add_action('admin_menu',array($this,'banner_admin_setup'));
 		add_action('wp_ajax_page_banner_preview',array($this,'preview_banner'));
+		
+		$this->name = $name;
 	}	
 	
 	function is_hex($string){
@@ -28,9 +30,9 @@ class Toist_Banners{
 	function banner_admin_setup(){
 		add_theme_page(
 			"Customize Banner",
-			"Culture Banner",
+			sprintf('%s Banner',$this->name),
 			"edit_theme_options",
-			"culture-banner",
+			sprintf("%s-banner",strtolower($this->name)),
 			array($this,"banner_admin")
 			);
 	}
@@ -60,8 +62,8 @@ class Toist_Banners{
 			$save['on'] = isset($_POST['on']) && $_POST['on'] == 'on';
 			
 			
-			update_option('culture_banner',$save);
-		}else{$save = get_option('culture_banner');}
+			update_option(sprintf('%s_banner',strtolower($this->name)),$save);
+		}else{$save = get_option(sprintf('%s_banner',strtolower($this->name)));}
 		
 		wp_enqueue_script('media-upload');
 		wp_enqueue_script('thickbox');
@@ -73,7 +75,7 @@ class Toist_Banners{
 			));
 		?>
 		<div class="wrap">
-			<h2>Culture Banner</h2>
+			<h2><?php echo $this->name ?> Banner</h2>
 			<div id="preview"><?php echo $this->banner_render(true); ?></div>
 			<form action="" method="POST">
 				<p>
@@ -125,13 +127,14 @@ class Toist_Banners{
 		if($preview && is_array($preview)){
 			$cfg = $preview;
 		}else{
-			$cfg = get_option('culture_banner');
+			$cfg = get_option(sprintf('%s_banner',strtolower($this->name)));
 			if($show_override) $cfg['on'] = true;
 		}
 		if($preview === false && (!isset($cfg['on']) || $cfg['on'] !== true)) return false;
 		
-		$return .= sprintf('<a href="%s" id="hub_banner"><div>',
-			isset($cfg['link']) ? $cfg['link'] : '#'
+		$return .= sprintf('<a href="%s" id="%s_banner" class="page banner"><div>',
+			isset($cfg['link']) ? $cfg['link'] : '#',
+			$this->name
 			);
 		if(isset($cfg['label'])) $return .= '<p class="label">'.stripslashes($cfg['label']).'</p>';
 		if(isset($cfg['headline'])) $return .= '<h1>'.stripslashes($cfg['headline']).'</h1>';
@@ -139,8 +142,8 @@ class Toist_Banners{
 		$return .= '</div></a>';
 		
 		$return .= '<style type="text/css">';
-		if(isset($cfg['bgcol'])) $return .= sprintf('a#hub_banner div{background-color:%s}',$cfg['bgcol']);
-		if(isset($cfg['bgimg'])) $return .= sprintf('a#hub_banner{background-image:url("%s")}',$cfg['bgimg']);
+		if(isset($cfg['bgcol'])) $return .= sprintf('a#%s_banner div{background-color:%s}',$this->name,$cfg['bgcol']);
+		if(isset($cfg['bgimg'])) $return .= sprintf('a#%s_banner{background-image:url("%s")}',$this->name,$cfg['bgimg']);
 		$return .= stripslashes($cfg['css']);
 		$return .= '</style>';
 		return $return;
@@ -206,11 +209,26 @@ class Toist_Banners{
 		echo $html;
 	}
 }
-$culture_banner = new Toist_Banners();
-
+$culture_banner = new Toist_Banners('Culture');
 function culture_banner($show_override){
 	global $culture_banner;
 	if($banner = $culture_banner->banner_render(false,$show_override)){
+		echo $banner;
+	}
+}
+
+$home_banner = new Toist_Banners('Home');
+function home_banner($show_override){
+	global $home_banner;
+	if($banner = $home_banner->banner_render(false,$show_override)){
+		echo $banner;
+	}
+}
+
+$single_banner = new Toist_Banners('Single');
+function single_banner($show_override){
+	global $single_banner;
+	if($banner = $single_banner->banner_render(false,$show_override)){
 		echo $banner;
 	}
 }
