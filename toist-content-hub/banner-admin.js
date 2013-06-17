@@ -8,7 +8,22 @@ jQuery(document).ready(function($){
 			return false;
 		})
 		.on('change','input,textarea',function(){
-			var settings = $form.serializeArray();
+			make_preview();
+		});
+	
+	window.send_to_editor = function(html){
+		var imgurl = $('img',html).attr('src');
+		if(typeof imgurl == 'undefined'){
+			imgurl = $(html).attr('src');
+		}
+		$('#background-image').val(imgurl);
+		//show preview
+		tb_remove();
+		make_preview();
+	}
+	
+	function make_preview(){
+		var settings = $form.serializeArray();
 			var banner = {};
 			$(settings).each(function(){
 				banner[this.name] = this.value;
@@ -17,7 +32,7 @@ jQuery(document).ready(function($){
 				banner:banner,
 				action: 'page_banner_preview'
 				};
-			
+	
 			$.post(
 				toistBanner.target,
 				data,
@@ -25,12 +40,5 @@ jQuery(document).ready(function($){
 					$preview.html(res);
 				}
 			);
-		});
-	
-	window.send_to_editor = function(html){
-		var imgurl = $('img',html).attr('src');
-		$('#background-image').val(imgurl);
-		//show preview
-		tb_remove();
 	}
 });
