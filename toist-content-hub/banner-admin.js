@@ -2,7 +2,7 @@ jQuery(document).ready(function($){
 	var $form = $("form");
 	var $preview = $("#preview");
 	$form
-		.on("focus","#background-image",function(){
+		.on("click","#bg-uploader",function(){
 			formfield = $("#background-image").attr('name');
 			tb_show('','media-upload.php?type=image&TB_iframe=true');
 			return false;

@@ -553,7 +553,7 @@ class Toist_Hub{
 				<p>
 					<label for="background-image">Background image</label>
 					<input id="background-image" name="bgimg" type="text" <?php if(isset($save['bgimg'])) printf('value="%s"',$save['bgimg']); ?> />
-					<?php //if set, allow clear; show image ?>
+					<a href="#" id="bg-uploader" class="button">Pick from media library</a>
 				</p>
 				<p>
 					<label for="css">CSS</label>
