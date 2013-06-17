@@ -28,7 +28,6 @@ class Toist_Editors_Picks extends WP_Widget {
 		//check if we have this cached
 		$picks = get_transient('toist-editors-picks');
 		if($picks === false){
-			//remove_filter('pre_get_posts','noindex_remover');
 			global $wp_filter;
 			$filters = $wp_filter['pre_get_posts'];
 			$wp_filter['pre_get_posts'] = array();
@@ -36,7 +35,8 @@ class Toist_Editors_Picks extends WP_Widget {
 				'post_type'	=> 'post',
 				'posts_per_page'	=>	$instance['number'],
 				'tag'	=>	'editors-pick',
-				'suppress_filters'	=>	'true'
+				'suppress_filters'	=>	'true',
+				'orderby'	=>	'date'
 			));
 			$events = new WP_Query(array(
 				'post_type'	=> 'event',
@@ -53,7 +53,7 @@ class Toist_Editors_Picks extends WP_Widget {
 			));
 			
 			$picks = array_merge($posts->posts,$events->posts);
-			array_multisort($picks,SORT_DESC);
+			uasort($picks,array($this,'hybrid_post_sort'));
 			$wp_filter['pre_get_posts'] = $filters;
 			set_transient('toist-editors-picks',$picks,15 * MINUTE_IN_SECONDS);
 		}
@@ -114,6 +114,13 @@ class Toist_Editors_Picks extends WP_Widget {
 	<?php
 	endif;
 	echo $after_widget;
+	}
+	
+	function hybrid_post_sort($a,$b){
+		$adate = strtotime($a->post_date);
+		$bdate = strtotime($b->post_date);
+		if($adate == $bdate) return 0;
+		return ($adate > $bdate) ? -1 : 1;
 	}
 
 	function update( $new_instance, $old_instance ) {
