@@ -101,6 +101,7 @@ class Toist_Banners{
 				<p>
 					<label for="background-image">Background image</label>
 					<input id="background-image" name="bgimg" type="text" <?php if(isset($save['bgimg'])) printf('value="%s"',$save['bgimg']); ?> />
+					<a href="#" id="bg-uploader" class="button">Pick from media library</a>
 					<?php //if set, allow clear; show image ?>
 				</p>
 				<p>
