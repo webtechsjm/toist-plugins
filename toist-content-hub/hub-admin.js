@@ -25,6 +25,7 @@ jQuery(document).ready(function($){
 			$footer = $('<footer></footer>')
 				.append('<a class="close button">Close</a>')
 				.append('<a class="save button-primary">Save</a>')
+				.append('<a class="insert button">Insert</a>')
 				.append(load_hub)
 				.appendTo($hub_window);
 			//load_add_pane();
@@ -40,6 +41,7 @@ jQuery(document).ready(function($){
 			.on("click",".close",function(){$overlay.hide();})
 			.on("click",".save",function(){save_hub();})
 			.on("click",".load",function(){load_hub();})
+			.on("click",".insert",function(){insert_hub();})
 			//.on("change","#post_search",function(){search_posts($);});
 			.on("click","#submit_search",function(ev){
 				ev.stopPropagation();
@@ -115,6 +117,12 @@ jQuery(document).ready(function($){
 			}
 			update_add_pane(data);
 		});
+	}
+	
+	function insert_hub(){
+		save_hub();
+		window.send_to_editor('[special_topic]\n');
+		$overlay.hide();
 	}
 	
 	function load_add_pane(){
